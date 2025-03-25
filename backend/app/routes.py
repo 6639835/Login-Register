@@ -7,6 +7,10 @@ from .email_utils import send_email
 import re
 import os
 import json
+import pyotp
+import qrcode
+from io import BytesIO
+import base64
 from urllib.parse import urlencode
 from datetime import datetime
 
@@ -555,3 +559,147 @@ def delete_account():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Failed to delete account: {str(e)}"}), 500
+
+# 2FA Routes
+@auth_bp.route('/2fa/setup', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def setup_2fa():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if user.two_factor_enabled:
+        return jsonify({"message": "2FA is already enabled"}), 400
+    
+    # Generate new 2FA secret
+    secret = user.generate_2fa_secret()
+    
+    # Generate QR code
+    totp = pyotp.TOTP(secret)
+    provisioning_uri = totp.provisioning_uri(
+        name=user.email,
+        issuer_name="Your App Name"
+    )
+    
+    # Create QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(provisioning_uri)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert QR code to base64
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    qr_code = base64.b64encode(buffered.getvalue()).decode()
+    
+    return jsonify({
+        "message": "2FA setup initiated",
+        "secret": secret,
+        "qr_code": qr_code,
+        "backup_codes": user.backup_codes
+    })
+
+@auth_bp.route('/2fa/verify-setup', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def verify_2fa_setup():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    data = request.get_json()
+    if not data or 'token' not in data:
+        return jsonify({"message": "Missing token"}), 400
+    
+    if user.verify_2fa(data['token']):
+        user.two_factor_enabled = True
+        db.session.commit()
+        return jsonify({"message": "2FA setup completed successfully"})
+    
+    return jsonify({"message": "Invalid token"}), 400
+
+@auth_bp.route('/2fa/verify', methods=['POST'])
+@cross_origin()
+def verify_2fa():
+    data = request.get_json()
+    if not data or 'email' not in data or 'token' not in data:
+        return jsonify({"message": "Missing required fields"}), 400
+    
+    user = User.query.filter_by(email=data['email']).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if not user.two_factor_enabled:
+        return jsonify({"message": "2FA is not enabled"}), 400
+    
+    if user.is_2fa_locked():
+        return jsonify({"message": "2FA is temporarily locked. Please try again later."}), 429
+    
+    if user.verify_2fa(data['token']):
+        access_token = create_access_token(identity=user.id)
+        return jsonify({
+            "message": "2FA verification successful",
+            "token": access_token,
+            "user": user.to_dict()
+        })
+    
+    return jsonify({"message": "Invalid token"}), 400
+
+@auth_bp.route('/2fa/backup-code', methods=['POST'])
+@cross_origin()
+def verify_backup_code():
+    data = request.get_json()
+    if not data or 'email' not in data or 'code' not in data:
+        return jsonify({"message": "Missing required fields"}), 400
+    
+    user = User.query.filter_by(email=data['email']).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if not user.two_factor_enabled:
+        return jsonify({"message": "2FA is not enabled"}), 400
+    
+    if user.is_2fa_locked():
+        return jsonify({"message": "2FA is temporarily locked. Please try again later."}), 429
+    
+    if user.verify_backup_code(data['code']):
+        db.session.commit()
+        access_token = create_access_token(identity=user.id)
+        return jsonify({
+            "message": "Backup code verification successful",
+            "token": access_token,
+            "user": user.to_dict()
+        })
+    
+    return jsonify({"message": "Invalid backup code"}), 400
+
+@auth_bp.route('/2fa/disable', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def disable_2fa():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if not user.two_factor_enabled:
+        return jsonify({"message": "2FA is not enabled"}), 400
+    
+    data = request.get_json()
+    if not data or 'token' not in data:
+        return jsonify({"message": "Missing token"}), 400
+    
+    if user.verify_2fa(data['token']):
+        user.two_factor_enabled = False
+        user.two_factor_secret = None
+        user.backup_codes = None
+        db.session.commit()
+        return jsonify({"message": "2FA disabled successfully"})
+    
+    return jsonify({"message": "Invalid token"}), 400

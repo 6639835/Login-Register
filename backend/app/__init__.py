@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
+from flask_migrate import Migrate
 from authlib.integrations.flask_client import OAuth
 from datetime import timedelta
 import os
@@ -18,6 +19,7 @@ bcrypt = Bcrypt()
 jwt = JWTManager()
 oauth = OAuth()
 mail = Mail()
+migrate = Migrate()
 
 def create_app(test_config=None):
     # Create and configure the app
@@ -54,6 +56,7 @@ def create_app(test_config=None):
     jwt.init_app(app)
     oauth.init_app(app)
     mail.init_app(app)
+    migrate.init_app(app, db)
     
     # Register OAuth providers
     oauth.register(

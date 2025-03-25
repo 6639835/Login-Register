@@ -2,6 +2,7 @@ from . import db, bcrypt
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
 import os
+import pyotp
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -19,6 +20,13 @@ class User(db.Model):
     # Email verification fields
     is_verified = db.Column(db.Boolean, default=False)
     verified_at = db.Column(db.DateTime, nullable=True)
+
+    # 2FA fields
+    two_factor_enabled = db.Column(db.Boolean, default=False)
+    two_factor_secret = db.Column(db.String(32), nullable=True)
+    backup_codes = db.Column(db.JSON, nullable=True)
+    last_2fa_attempt = db.Column(db.DateTime, nullable=True)
+    failed_2fa_attempts = db.Column(db.Integer, default=0)
 
     def __init__(self, name, email, password=None, auth_type='email', social_id=None, profile_image=None):
         self.name = name
@@ -71,6 +79,55 @@ class User(db.Model):
             return email
         except Exception:
             return None
+
+    def generate_2fa_secret(self):
+        """Generate a new 2FA secret and backup codes."""
+        self.two_factor_secret = pyotp.random_base32()
+        # Generate 8 backup codes
+        self.backup_codes = [pyotp.random_base32()[:8] for _ in range(8)]
+        return self.two_factor_secret
+
+    def verify_2fa(self, token):
+        """Verify a 2FA token."""
+        if not self.two_factor_enabled or not self.two_factor_secret:
+            return False
+        
+        totp = pyotp.TOTP(self.two_factor_secret)
+        is_valid = totp.verify(token)
+        
+        if is_valid:
+            self.failed_2fa_attempts = 0
+            self.last_2fa_attempt = datetime.utcnow()
+        else:
+            self.failed_2fa_attempts += 1
+            self.last_2fa_attempt = datetime.utcnow()
+        
+        return is_valid
+
+    def verify_backup_code(self, code):
+        """Verify a backup code and remove it if valid."""
+        if not self.backup_codes:
+            return False
+        
+        if code in self.backup_codes:
+            self.backup_codes.remove(code)
+            self.failed_2fa_attempts = 0
+            self.last_2fa_attempt = datetime.utcnow()
+            return True
+        return False
+
+    def is_2fa_locked(self):
+        """Check if 2FA is locked due to too many failed attempts."""
+        if not self.last_2fa_attempt:
+            return False
+        if self.failed_2fa_attempts >= 5:
+            lockout_time = timedelta(minutes=15)
+            if datetime.utcnow() - self.last_2fa_attempt < lockout_time:
+                return True
+            else:
+                self.failed_2fa_attempts = 0
+                return False
+        return False
 
 class TokenBlacklist(db.Model):
     """Store used tokens to prevent reuse (for email verification, password reset, etc.)"""

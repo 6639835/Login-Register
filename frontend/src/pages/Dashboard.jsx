@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCurrentUser } from '../services/apiService';
+import { getCurrentUser, resendVerificationEmail, checkVerificationStatus } from '../services/apiService';
 import ProfileSettings from '../components/ProfileSettings';
 
 const Dashboard = ({ onLogout }) => {
@@ -7,12 +7,21 @@ const Dashboard = ({ onLogout }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getCurrentUser();
         setUser(userData);
+        
+        // Fetch verification status
+        if (userData.auth_type === 'email') {
+          const status = await checkVerificationStatus();
+          setVerificationStatus(status);
+        }
       } catch (err) {
         setError('Failed to fetch user data');
         console.error(err);
@@ -23,6 +32,28 @@ const Dashboard = ({ onLogout }) => {
 
     fetchUserData();
   }, []);
+
+  const handleResendVerification = async () => {
+    if (isResendingVerification) return;
+    
+    setIsResendingVerification(true);
+    setResendSuccess(false);
+    
+    try {
+      await resendVerificationEmail(user.email);
+      setResendSuccess(true);
+      
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setResendSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Error resending verification:', err);
+      setError('Failed to resend verification email. Please try again.');
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
 
   const handleProfileUpdate = (updatedUser) => {
     setUser(updatedUser);
@@ -42,6 +73,37 @@ const Dashboard = ({ onLogout }) => {
         return (
           <div className="glassmorphism p-8 rounded-2xl">
             <h2 className="text-2xl font-semibold mb-6">Welcome, {user?.name || 'User'}!</h2>
+            
+            {/* Verification banner for email users */}
+            {user?.auth_type === 'email' && verificationStatus && !verificationStatus.is_verified && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Your email address is not verified. Please check your inbox for a verification link or 
+                      <button 
+                        onClick={handleResendVerification}
+                        disabled={isResendingVerification}
+                        className="font-medium underline ml-1 focus:outline-none"
+                      >
+                        {isResendingVerification ? 'sending...' : 'click here to resend'}
+                      </button>.
+                    </p>
+                    {resendSuccess && (
+                      <p className="text-sm text-green-600 mt-2">
+                        Verification email sent successfully! Please check your inbox.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-center mb-4">
@@ -65,6 +127,10 @@ const Dashboard = ({ onLogout }) => {
                     <span className="text-gray-500">Member since:</span>
                     <span className="font-medium">{new Date(user?.created_at).toLocaleDateString()}</span>
                   </li>
+                  <li className="flex justify-between">
+                    <span className="text-gray-500">Login method:</span>
+                    <span className="font-medium capitalize">{user?.auth_type}</span>
+                  </li>
                 </ul>
               </div>
               
@@ -78,8 +144,34 @@ const Dashboard = ({ onLogout }) => {
                   <h3 className="text-lg font-medium">Account Status</h3>
                 </div>
                 <div className="flex flex-col items-center justify-center h-32">
-                  <div className="text-green-500 text-xl font-semibold mb-2">Active</div>
-                  <p className="text-gray-600 text-center">Your account is in good standing</p>
+                  {user?.auth_type === 'email' ? (
+                    user?.is_verified ? (
+                      <>
+                        <div className="text-green-500 text-xl font-semibold mb-2 flex items-center">
+                          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Email Verified
+                        </div>
+                        <p className="text-gray-600 text-center">Your account is fully verified and active</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-yellow-500 text-xl font-semibold mb-2 flex items-center">
+                          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Email Verification Needed
+                        </div>
+                        <p className="text-gray-600 text-center">Please verify your email to fully activate your account</p>
+                      </>
+                    )
+                  ) : (
+                    <>
+                      <div className="text-green-500 text-xl font-semibold mb-2">Active</div>
+                      <p className="text-gray-600 text-center">Your account is in good standing</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

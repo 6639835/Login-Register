@@ -26,7 +26,12 @@ const apiRequest = async (url, method = 'GET', data = null) => {
     const result = await response.json();
     
     if (!response.ok) {
-      throw new Error(result.message || 'Something went wrong');
+      const error = new Error(result.message || 'Something went wrong');
+      error.response = {
+        status: response.status,
+        data: result
+      };
+      throw error;
     }
     
     return result;
@@ -47,6 +52,15 @@ export const loginUser = (credentials) => {
 
 export const forgotPassword = (email) => {
   return apiRequest('/auth/forgot-password', 'POST', { email });
+};
+
+// Verification services
+export const resendVerificationEmail = (email) => {
+  return apiRequest('/verify/resend', 'POST', { email });
+};
+
+export const checkVerificationStatus = () => {
+  return apiRequest('/users/verification-status');
 };
 
 // User services
@@ -70,6 +84,8 @@ export default {
   registerUser,
   loginUser,
   forgotPassword,
+  resendVerificationEmail,
+  checkVerificationStatus,
   getCurrentUser,
   updateProfile,
   changePassword,

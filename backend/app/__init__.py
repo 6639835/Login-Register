@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 from datetime import timedelta
 import os
@@ -16,6 +17,7 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 oauth = OAuth()
+mail = Mail()
 
 def create_app(test_config=None):
     # Create and configure the app
@@ -27,7 +29,16 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URI', 'sqlite:///dev.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY', 'jwt_dev_key'),
-        JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=1)
+        JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=1),
+        
+        # Mail configuration
+        MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.gmail.com'),
+        MAIL_PORT=int(os.environ.get('MAIL_PORT', 587)),
+        MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS', 'True') == 'True',
+        MAIL_USE_SSL=os.environ.get('MAIL_USE_SSL', 'False') == 'True',
+        MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
+        MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
+        MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER')
     )
 
     # Apply test configuration if provided
@@ -42,6 +53,7 @@ def create_app(test_config=None):
     bcrypt.init_app(app)
     jwt.init_app(app)
     oauth.init_app(app)
+    mail.init_app(app)
     
     # Register OAuth providers
     oauth.register(
@@ -88,8 +100,10 @@ def create_app(test_config=None):
 
     # Register blueprints
     from .routes import auth_bp, user_bp
+    from .verify_routes import verify_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(verify_bp)
 
     # Create database tables
     with app.app_context():

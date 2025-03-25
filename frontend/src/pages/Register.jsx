@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { registerUser } from '../services/apiService';
+import { registerUser, resendVerificationEmail } from '../services/apiService';
 import SocialLogin from '../components/SocialLogin';
 
 const Register = ({ onLogin }) => {
@@ -12,6 +12,10 @@ const Register = ({ onLogin }) => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -58,7 +62,13 @@ const Register = ({ onLogin }) => {
         email: formData.email,
         password: formData.password
       });
-      onLogin(response.token);
+      
+      // Store the registered email to show in success message
+      setRegisteredEmail(formData.email);
+      setRegistrationSuccess(true);
+      
+      // We don't automatically log in anymore since email verification is required
+      // onLogin(response.token);
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || 'Registration failed. Please try again.');
@@ -66,6 +76,92 @@ const Register = ({ onLogin }) => {
       setIsLoading(false);
     }
   };
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail || isResending) return;
+    
+    setIsResending(true);
+    setResendSuccess(false);
+    
+    try {
+      await resendVerificationEmail(registeredEmail);
+      setResendSuccess(true);
+      
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setResendSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Error resending verification:', err);
+      setError(err.message || 'Failed to resend verification email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  // If registration was successful, show the verification message
+  if (registrationSuccess) {
+    return (
+      <div className="flex min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="shape-blob w-96 h-96 from-purple-300 to-indigo-400 top-0 left-0 -mt-20 -ml-20"></div>
+        <div className="shape-blob w-96 h-96 from-pink-300 to-purple-400 bottom-0 right-0 -mb-20 -mr-20"></div>
+        
+        <div className="absolute inset-0 bg-grid-primary-500/[0.05] bg-[size:32px_32px]"></div>
+        
+        <div className="w-full max-w-md mx-auto my-auto px-6 z-10">
+          <div className="slide-up glassmorphism rounded-3xl p-10 shadow-2xl">
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-teal-600 rounded-full flex items-center justify-center pulse shadow-xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
+              <p className="text-gray-600 mb-4">Please verify your email address to continue</p>
+              
+              <div className="bg-blue-50 text-blue-800 p-4 rounded-xl mb-6 border border-blue-100">
+                <p>We've sent a verification email to:</p>
+                <p className="font-semibold mt-2">{registeredEmail}</p>
+                <p className="mt-4 text-sm">Please check your inbox and click the verification link to activate your account.</p>
+              </div>
+              
+              {resendSuccess && (
+                <div className="bg-green-50 text-green-800 p-4 rounded-xl mb-6 border border-green-100 fade-in">
+                  <p>Verification email has been resent successfully!</p>
+                </div>
+              )}
+              
+              <p className="text-gray-500 text-sm mt-4">
+                Didn't receive the email? Check your spam folder or{' '}
+                <button 
+                  className="text-indigo-600 hover:text-indigo-500 focus:outline-none"
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                >
+                  {isResending ? 'Sending...' : 'click here to resend'}
+                </button>
+              </p>
+              
+              <div className="mt-8">
+                <Link
+                  to="/login"
+                  className="btn btn-primary w-full flex justify-center items-center bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                >
+                  <span>Go to Login</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 relative overflow-hidden">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { loginUser } from '../services/apiService';
+import { loginUser, resendVerificationEmail } from '../services/apiService';
 import ForgotPassword from '../components/ForgotPassword';
 import SocialLogin from '../components/SocialLogin';
 
@@ -12,6 +12,10 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [verificationNeeded, setVerificationNeeded] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -28,17 +32,48 @@ const Login = ({ onLogin }) => {
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail || isResendingVerification) return;
+    
+    setIsResendingVerification(true);
+    setResendSuccess(false);
+    
+    try {
+      await resendVerificationEmail(unverifiedEmail);
+      setResendSuccess(true);
+      
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setResendSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Error resending verification:', err);
+      setError(err.message || 'Failed to resend verification email. Please try again.');
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setVerificationNeeded(false);
     
     try {
       const response = await loginUser(credentials);
       onLogin(response.token);
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'Failed to login. Please check your credentials.');
+      
+      // Check if this is a verification error
+      if (err.response && err.response.status === 403 && err.response.data.verification_required) {
+        setVerificationNeeded(true);
+        setUnverifiedEmail(err.response.data.email || credentials.email);
+        setError('Your email has not been verified yet. Please check your inbox for a verification link or request a new one.');
+      } else {
+        setError(err.message || 'Failed to login. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -67,11 +102,32 @@ const Login = ({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 border border-red-100 fade-in flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              {error}
+            <div className={`bg-red-50 text-red-700 p-4 rounded-xl mb-6 border border-red-100 fade-in flex ${verificationNeeded ? 'flex-col' : 'items-center'}`}>
+              <div className="flex items-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span>{error}</span>
+              </div>
+              
+              {verificationNeeded && (
+                <div className="mt-2 text-center">
+                  <button
+                    type="button"
+                    className="text-primary-600 hover:text-primary-700 font-medium focus:outline-none text-sm"
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification}
+                  >
+                    {isResendingVerification ? 'Sending...' : 'Resend verification email'}
+                  </button>
+                  
+                  {resendSuccess && (
+                    <div className="mt-2 text-green-600 text-sm">
+                      Verification email sent successfully! Please check your inbox.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

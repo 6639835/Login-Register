@@ -1,12 +1,14 @@
-from flask import Blueprint, request, jsonify, redirect, url_for, session, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, session, current_app, render_template
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import cross_origin
-from .models import User
+from .models import User, TokenBlacklist
 from . import db, oauth
+from .email_utils import send_email
 import re
 import os
 import json
 from urllib.parse import urlencode
+from datetime import datetime
 
 # Create blueprints
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -59,11 +61,28 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
+        # Generate verification token and send email
+        token = new_user.generate_verification_token()
+        verification_url = f"{os.environ.get('FRONTEND_URL')}/verify-email/{token}"
+        
+        try:
+            send_email(
+                to=new_user.email,
+                subject="Verify Your Email Address",
+                template="email/verify_email.html",
+                name=new_user.name,
+                verification_url=verification_url,
+                year=datetime.now().year
+            )
+        except Exception as e:
+            print(f"Failed to send verification email: {str(e)}")
+            # Continue with registration even if email fails
+        
         # Generate access token
         access_token = create_access_token(identity=new_user.id)
         
         return jsonify({
-            "message": "User registered successfully",
+            "message": "User registered successfully. Please check your email to verify your account.",
             "token": access_token,
             "user": new_user.to_dict()
         }), 201
@@ -72,6 +91,93 @@ def register():
         print(f"Error during registration: {str(e)}")
         db.session.rollback()
         return jsonify({"message": f"Registration failed: {str(e)}"}), 500
+
+@auth_bp.route('/verify-email/<token>', methods=['GET'])
+@cross_origin()
+def verify_email(token):
+    # Check if token is blacklisted
+    if TokenBlacklist.is_blacklisted(token):
+        return render_template(
+            "email/verification_success.html",
+            success=False,
+            error_message="This verification link has already been used.",
+            frontend_url=os.environ.get('FRONTEND_URL')
+        )
+    
+    # Verify token
+    email = User.verify_token(token, expiration=86400)  # 24 hours expiration
+    
+    if not email:
+        return render_template(
+            "email/verification_success.html",
+            success=False,
+            error_message="The verification link is invalid or has expired.",
+            frontend_url=os.environ.get('FRONTEND_URL')
+        )
+    
+    # Find user by email
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        return render_template(
+            "email/verification_success.html",
+            success=False,
+            error_message="User not found.",
+            frontend_url=os.environ.get('FRONTEND_URL')
+        )
+    
+    if user.is_verified:
+        return render_template(
+            "email/verification_success.html",
+            success=True,
+            frontend_url=os.environ.get('FRONTEND_URL')
+        )
+    
+    # Update user verification status
+    user.is_verified = True
+    user.verified_at = datetime.utcnow()
+    
+    # Blacklist token to prevent reuse
+    blacklist_token = TokenBlacklist(token=token, token_type="verification")
+    
+    db.session.add(blacklist_token)
+    db.session.commit()
+    
+    return render_template(
+        "email/verification_success.html",
+        success=True,
+        frontend_url=os.environ.get('FRONTEND_URL')
+    )
+
+@auth_bp.route('/resend-verification', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def resend_verification():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if user.is_verified:
+        return jsonify({"message": "Email already verified"}), 400
+    
+    # Generate verification token and send email
+    token = user.generate_verification_token()
+    verification_url = f"{os.environ.get('FRONTEND_URL')}/verify-email/{token}"
+    
+    try:
+        send_email(
+            to=user.email,
+            subject="Verify Your Email Address",
+            template="email/verify_email.html",
+            name=user.name,
+            verification_url=verification_url,
+            year=datetime.now().year
+        )
+        return jsonify({"message": "Verification email has been sent"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to send verification email: {str(e)}"}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 @cross_origin()
@@ -90,6 +196,14 @@ def login():
     # Verify user exists and password is correct
     if not user or not user.check_password(data['password']):
         return jsonify({"message": "Invalid email or password"}), 401
+    
+    # Check if email is verified (for email auth users only)
+    if user.auth_type == 'email' and not user.is_verified:
+        return jsonify({
+            "message": "Email not verified. Please check your inbox for verification link or request a new one.",
+            "verification_required": True,
+            "email": user.email
+        }), 403
     
     # Generate access token
     access_token = create_access_token(identity=user.id)
@@ -152,6 +266,8 @@ def github_callback():
                 email_user.social_id = str(profile['id'])
                 email_user.auth_type = 'github'
                 email_user.profile_image = profile.get('avatar_url')
+                email_user.is_verified = True
+                email_user.verified_at = datetime.utcnow() if not email_user.verified_at else email_user.verified_at
                 user = email_user
             else:
                 # Create new user
@@ -206,6 +322,8 @@ def google_callback():
                 email_user.social_id = profile['id']
                 email_user.auth_type = 'google'
                 email_user.profile_image = profile.get('picture')
+                email_user.is_verified = True
+                email_user.verified_at = datetime.utcnow() if not email_user.verified_at else email_user.verified_at
                 user = email_user
             else:
                 # Create new user
@@ -260,6 +378,8 @@ def facebook_callback():
                     # Link accounts
                     email_user.social_id = profile['id']
                     email_user.auth_type = 'facebook'
+                    email_user.is_verified = True
+                    email_user.verified_at = datetime.utcnow() if not email_user.verified_at else email_user.verified_at
                     if 'picture' in profile and 'data' in profile['picture']:
                         email_user.profile_image = profile['picture']['data']['url']
                     user = email_user
@@ -305,6 +425,23 @@ def get_current_user():
     
     return jsonify(user.to_dict()), 200
 
+@user_bp.route('/verification-status', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def verification_status():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    return jsonify({
+        "is_verified": user.is_verified,
+        "auth_type": user.auth_type,
+        "email": user.email,
+        "verified_at": user.verified_at.isoformat() if user.verified_at else None
+    }), 200
+
 @user_bp.route('/update-profile', methods=['PUT'])
 @jwt_required()
 @cross_origin()
@@ -332,11 +469,36 @@ def update_profile():
             return jsonify({"message": "Email already in use"}), 409
             
         user.email = data['email']
+        
+        # If user changes email, they need to verify it again
+        if user.auth_type == 'email':
+            user.is_verified = False
+            user.verified_at = None
+            
+            # Send verification email for new address
+            token = user.generate_verification_token()
+            verification_url = f"{os.environ.get('FRONTEND_URL')}/verify-email/{token}"
+            
+            try:
+                send_email(
+                    to=user.email,
+                    subject="Verify Your New Email Address",
+                    template="email/verify_email.html",
+                    name=user.name,
+                    verification_url=verification_url,
+                    year=datetime.now().year
+                )
+            except Exception as e:
+                print(f"Failed to send verification email: {str(e)}")
     
     try:
         db.session.commit()
         return jsonify({
-            "message": "Profile updated successfully",
+            "message": "Profile updated successfully" + (
+                ". Please check your email to verify your new email address." 
+                if 'email' in data and data['email'] != user.email and user.auth_type == 'email' 
+                else ""
+            ),
             "user": user.to_dict()
         }), 200
     except Exception as e:
@@ -392,4 +554,4 @@ def delete_account():
         return jsonify({"message": "Account deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": f"Failed to delete account: {str(e)}"}), 500 
+        return jsonify({"message": f"Failed to delete account: {str(e)}"}), 500

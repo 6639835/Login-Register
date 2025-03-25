@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { registerUser } from '../services/apiService';
+import SocialLogin from '../components/SocialLogin';
 
 const Register = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,16 @@ const Register = ({ onLogin }) => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for error in URL params (from OAuth redirect)
+    const params = new URLSearchParams(location.search);
+    const errorMessage = params.get('error');
+    if (errorMessage) {
+      setError(decodeURIComponent(errorMessage));
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -209,6 +220,9 @@ const Register = ({ onLogin }) => {
               </Link>
             </p>
           </div>
+          
+          {/* Social login options */}
+          <SocialLogin />
         </div>
       </div>
     </div>

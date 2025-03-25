@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import OAuthCallback from './pages/OAuthCallback';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,6 +40,10 @@ function App() {
         <Route 
           path="/register" 
           element={!isAuthenticated ? <Register onLogin={login} /> : <Navigate to="/dashboard" />} 
+        />
+        <Route 
+          path="/oauth/callback" 
+          element={<OAuthCallback onLogin={login} />} 
         />
         <Route 
           path="/dashboard" 

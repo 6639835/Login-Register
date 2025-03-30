@@ -12,7 +12,7 @@ import qrcode
 from io import BytesIO
 import base64
 from urllib.parse import urlencode
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Create blueprints
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -201,22 +201,33 @@ def login():
     if not user or not user.check_password(data['password']):
         return jsonify({"message": "Invalid email or password"}), 401
     
-    # Check if email is verified (for email auth users only)
-    if user.auth_type == 'email' and not user.is_verified:
+    # Check if user's email is verified
+    if not user.is_verified:
         return jsonify({
-            "message": "Email not verified. Please check your inbox for verification link or request a new one.",
+            "message": "Email not verified",
             "verification_required": True,
             "email": user.email
         }), 403
+
+    # Check if 2FA is enabled
+    if user.two_factor_enabled:
+        # Generate temporary token for 2FA verification
+        # This token will have limited permissions and short expiration time
+        temp_token = create_access_token(
+            identity=user.id,
+            additional_claims={"temp": True, "for_2fa": True},
+            expires_delta=timedelta(minutes=5)
+        )
+        
+        return jsonify({
+            "message": "2FA verification required",
+            "requires_2fa": True,
+            "user_id": user.id,
+            "temp_token": temp_token
+        }), 200
     
-    # Generate access token
-    access_token = create_access_token(identity=user.id)
-    
-    return jsonify({
-        "message": "Login successful",
-        "token": access_token,
-        "user": user.to_dict()
-    }), 200
+    # If 2FA is not enabled, return full access token
+    return get_user_and_token(user)
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 @cross_origin()
@@ -571,135 +582,145 @@ def setup_2fa():
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    if user.two_factor_enabled:
-        return jsonify({"message": "2FA is already enabled"}), 400
-    
-    # Generate new 2FA secret
+    # Generate 2FA secret
     secret = user.generate_2fa_secret()
     
-    # Generate QR code
+    # Generate QR code for TOTP
     totp = pyotp.TOTP(secret)
-    provisioning_uri = totp.provisioning_uri(
-        name=user.email,
-        issuer_name="Your App Name"
-    )
+    uri = totp.provisioning_uri(user.email, issuer_name="SecureAuth App")
     
     # Create QR code
-    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(provisioning_uri)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(uri)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
     
-    # Convert QR code to base64
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    qr_code = base64.b64encode(buffered.getvalue()).decode()
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer)
+    qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    # Save changes to database (but don't enable 2FA yet until verified)
+    db.session.commit()
     
     return jsonify({
-        "message": "2FA setup initiated",
+        "message": "2FA setup initiated", 
         "secret": secret,
-        "qr_code": qr_code,
+        "qr_code": qr_code_base64,
         "backup_codes": user.backup_codes
-    })
+    }), 200
 
 @auth_bp.route('/2fa/verify-setup', methods=['POST'])
 @jwt_required()
 @cross_origin()
 def verify_2fa_setup():
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
+    data = request.get_json()
     
+    if not data or 'code' not in data:
+        return jsonify({"message": "Verification code is required"}), 400
+    
+    user = User.query.get(user_id)
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    data = request.get_json()
-    if not data or 'token' not in data:
-        return jsonify({"message": "Missing token"}), 400
+    if not user.two_factor_secret:
+        return jsonify({"message": "2FA setup not initiated"}), 400
     
-    if user.verify_2fa(data['token']):
+    # Verify the code
+    totp = pyotp.TOTP(user.two_factor_secret)
+    if totp.verify(data['code']):
+        # Enable 2FA for the user
         user.two_factor_enabled = True
         db.session.commit()
-        return jsonify({"message": "2FA setup completed successfully"})
+        return jsonify({"message": "2FA setup completed successfully"}), 200
     
-    return jsonify({"message": "Invalid token"}), 400
+    return jsonify({"message": "Invalid verification code"}), 400
 
 @auth_bp.route('/2fa/verify', methods=['POST'])
 @cross_origin()
 def verify_2fa():
     data = request.get_json()
-    if not data or 'email' not in data or 'token' not in data:
+    
+    # Validate required fields
+    if not all(k in data for k in ('user_id', 'code', 'temp_token')):
         return jsonify({"message": "Missing required fields"}), 400
     
-    user = User.query.filter_by(email=data['email']).first()
+    # Find user by ID
+    user = User.query.get(data['user_id'])
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    if not user.two_factor_enabled:
-        return jsonify({"message": "2FA is not enabled"}), 400
-    
+    # Check if 2FA is locked due to too many attempts
     if user.is_2fa_locked():
-        return jsonify({"message": "2FA is temporarily locked. Please try again later."}), 429
+        return jsonify({"message": "Too many failed attempts. Please try again later."}), 429
     
-    if user.verify_2fa(data['token']):
-        access_token = create_access_token(identity=user.id)
-        return jsonify({
-            "message": "2FA verification successful",
-            "token": access_token,
-            "user": user.to_dict()
-        })
+    # Verify the 2FA code
+    if not user.verify_2fa(data['code']):
+        return jsonify({"message": "Invalid verification code"}), 401
     
-    return jsonify({"message": "Invalid token"}), 400
+    # Generate new full access token
+    return get_user_and_token(user)
 
 @auth_bp.route('/2fa/backup-code', methods=['POST'])
 @cross_origin()
 def verify_backup_code():
     data = request.get_json()
-    if not data or 'email' not in data or 'code' not in data:
+    
+    # Validate required fields
+    if not all(k in data for k in ('user_id', 'backup_code', 'temp_token')):
         return jsonify({"message": "Missing required fields"}), 400
     
-    user = User.query.filter_by(email=data['email']).first()
+    # Find user by ID
+    user = User.query.get(data['user_id'])
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    if not user.two_factor_enabled:
-        return jsonify({"message": "2FA is not enabled"}), 400
-    
+    # Check if 2FA is locked due to too many attempts
     if user.is_2fa_locked():
-        return jsonify({"message": "2FA is temporarily locked. Please try again later."}), 429
+        return jsonify({"message": "Too many failed attempts. Please try again later."}), 429
     
-    if user.verify_backup_code(data['code']):
-        db.session.commit()
-        access_token = create_access_token(identity=user.id)
-        return jsonify({
-            "message": "Backup code verification successful",
-            "token": access_token,
-            "user": user.to_dict()
-        })
+    # Verify the backup code
+    if not user.verify_backup_code(data['backup_code']):
+        return jsonify({"message": "Invalid backup code"}), 401
     
-    return jsonify({"message": "Invalid backup code"}), 400
+    # Save changes to backup codes list (one was used)
+    db.session.commit()
+    
+    # Generate new full access token
+    return get_user_and_token(user)
 
 @auth_bp.route('/2fa/disable', methods=['POST'])
 @jwt_required()
 @cross_origin()
 def disable_2fa():
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
+    data = request.get_json()
     
+    if not data or 'password' not in data:
+        return jsonify({"message": "Password is required to disable 2FA"}), 400
+    
+    user = User.query.get(user_id)
     if not user:
         return jsonify({"message": "User not found"}), 404
     
     if not user.two_factor_enabled:
         return jsonify({"message": "2FA is not enabled"}), 400
     
-    data = request.get_json()
-    if not data or 'token' not in data:
-        return jsonify({"message": "Missing token"}), 400
+    # Verify password before disabling 2FA
+    if not user.check_password(data['password']):
+        return jsonify({"message": "Invalid password"}), 401
     
-    if user.verify_2fa(data['token']):
-        user.two_factor_enabled = False
-        user.two_factor_secret = None
-        user.backup_codes = None
-        db.session.commit()
-        return jsonify({"message": "2FA disabled successfully"})
+    # Disable 2FA
+    user.two_factor_enabled = False
+    user.two_factor_secret = None
+    user.backup_codes = None
+    user.failed_2fa_attempts = 0
     
-    return jsonify({"message": "Invalid token"}), 400
+    db.session.commit()
+    
+    return jsonify({"message": "2FA has been disabled"}), 200

@@ -54,6 +54,27 @@ export const forgotPassword = (email) => {
   return apiRequest('/auth/forgot-password', 'POST', { email });
 };
 
+// Two-factor authentication services
+export const verify2FA = (authData) => {
+  return apiRequest('/auth/2fa/verify', 'POST', authData);
+};
+
+export const verifyBackupCode = (authData) => {
+  return apiRequest('/auth/2fa/backup-code', 'POST', authData);
+};
+
+export const setup2FA = () => {
+  return apiRequest('/auth/2fa/setup', 'POST');
+};
+
+export const verify2FASetup = (code) => {
+  return apiRequest('/auth/2fa/verify-setup', 'POST', { code });
+};
+
+export const disable2FA = () => {
+  return apiRequest('/auth/2fa/disable', 'POST');
+};
+
 // Verification services
 export const resendVerificationEmail = (email) => {
   return apiRequest('/verify/resend', 'POST', { email });
@@ -84,6 +105,11 @@ export default {
   registerUser,
   loginUser,
   forgotPassword,
+  verify2FA,
+  verifyBackupCode,
+  setup2FA,
+  verify2FASetup,
+  disable2FA,
   resendVerificationEmail,
   checkVerificationStatus,
   getCurrentUser,

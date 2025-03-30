@@ -81,6 +81,7 @@ Create a `.env` file in the backend directory with the following variables:
 ```env
 SECRET_KEY=your_secret_key
 JWT_SECRET_KEY=your_jwt_secret
+DATA_ENCRYPTION_KEY=your_data_encryption_key  # Used for encrypting sensitive data
 DATABASE_URI=sqlite:///dev.db  # or your database URI
 
 # Email Configuration
@@ -135,11 +136,14 @@ FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
   - TOTP-based authentication
   - Rate limiting (5 attempts)
   - 15-minute lockout after failed attempts
-  - Secure backup codes
+  - Encrypted storage of 2FA secrets
+  - Secure backup codes stored with encryption
 - Email verification
 - CORS protection
 - Environment variable configuration
 - SQL injection protection through SQLAlchemy
+- Encrypted sensitive data storage using Fernet symmetric encryption
+- PBKDF2 key derivation for encryption keys
 
 ## Technologies Used
 
@@ -147,7 +151,7 @@ FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
 - **Backend**: Flask, SQLAlchemy, JWT
 - **Database**: SQLite (development), can be configured for PostgreSQL, MySQL, etc.
 - **Authentication**: JWT, OAuth2, TOTP (2FA)
-- **Security**: bcrypt, rate limiting
+- **Security**: bcrypt, cryptography library, rate limiting
 - **Email**: Flask-Mail
 - **Other**: Flask-Migrate, pyotp, qrcode
 

@@ -195,7 +195,7 @@ export const setup2FA = () => {
   return apiRequest('/auth/setup-2fa', 'POST');
 };
 
-export const confirm2FA = (token) => {
+export const verify2FASetup = (token) => {
   return apiRequest('/auth/confirm-2fa', 'POST', { token });
 };
 
@@ -228,6 +228,10 @@ export const checkVerificationToken = (token) => {
   return apiRequest(`/verify-token-status/${token}`);
 };
 
+export const checkVerificationStatus = () => {
+  return apiRequest('/user/verification-status');
+};
+
 export const resendVerificationEmail = (email) => {
   return apiRequest('/auth/resend-verification', 'POST', { email });
 };
@@ -241,6 +245,11 @@ export const getCurrentUser = () => {
   return getUser();
 };
 
+// User account management
+export const deleteAccount = (password) => {
+  return apiRequest('/user/delete-account', 'POST', { password });
+};
+
 export default {
   registerUser,
   loginUser,
@@ -249,14 +258,16 @@ export default {
   resetPassword,
   verify2FA,
   setup2FA,
-  confirm2FA,
+  verify2FASetup,
   disable2FA,
   getProfile,
   updateProfile,
   changePassword,
   getLoginHistory,
   checkVerificationToken,
+  checkVerificationStatus,
   resendVerificationEmail,
   isAuthenticated,
   getCurrentUser,
+  deleteAccount,
 }; 

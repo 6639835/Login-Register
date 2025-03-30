@@ -788,3 +788,100 @@ def disable_2fa():
     db.session.commit()
     
     return jsonify({"message": "2FA has been disabled"}), 200
+
+# 管理员API端点
+@app.route('/api/admin/users', methods=['GET'])
+@jwt_required()
+def get_all_users():
+    # 检查当前用户是否有管理员权限
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # 这里应该有一个更完善的权限控制系统
+    # 简单起见，假设ID为1的用户是管理员
+    if not current_user or current_user.id != 1:
+        return jsonify({"error": "Unauthorized - Admin access required"}), 403
+    
+    users = User.query.all()
+    return jsonify({
+        "users": [user.to_dict() for user in users]
+    }), 200
+
+@app.route('/api/admin/tokens', methods=['GET'])
+@jwt_required()
+def get_all_tokens():
+    # 检查当前用户是否有管理员权限
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # 简单起见，假设ID为1的用户是管理员
+    if not current_user or current_user.id != 1:
+        return jsonify({"error": "Unauthorized - Admin access required"}), 403
+    
+    tokens = TokenBlacklist.query.all()
+    return jsonify({
+        "tokens": [
+            {
+                "id": token.id,
+                "token": token.token,
+                "token_type": token.token_type,
+                "blacklisted_at": token.blacklisted_at.isoformat()
+            } for token in tokens
+        ]
+    }), 200
+
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    # 检查当前用户是否有管理员权限
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # 简单起见，假设ID为1的用户是管理员
+    if not current_user or current_user.id != 1:
+        return jsonify({"error": "Unauthorized - Admin access required"}), 403
+    
+    # 不允许删除自己
+    if current_user_id == user_id:
+        return jsonify({"error": "Cannot delete your own account"}), 400
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({"message": "User deleted successfully"}), 200
+
+@app.route('/api/admin/users/<int:user_id>/verify', methods=['PUT'])
+@jwt_required()
+def toggle_user_verification(user_id):
+    # 检查当前用户是否有管理员权限
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # 简单起见，假设ID为1的用户是管理员
+    if not current_user or current_user.id != 1:
+        return jsonify({"error": "Unauthorized - Admin access required"}), 403
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # 获取请求数据
+    data = request.get_json()
+    is_verified = data.get('is_verified', False)
+    
+    user.is_verified = is_verified
+    if is_verified:
+        user.verified_at = datetime.utcnow()
+    else:
+        user.verified_at = None
+    
+    db.session.commit()
+    
+    return jsonify({
+        "message": "User verification status updated",
+        "user": user.to_dict()
+    }), 200

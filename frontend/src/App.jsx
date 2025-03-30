@@ -8,6 +8,7 @@ import OAuthCallback from './pages/OAuthCallback';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AdminDashboard from './pages/AdminDashboard';
 import { isAuthenticated, getCurrentUser } from './services/apiService';
 
 function App() {
@@ -132,6 +133,10 @@ function App() {
             <Route 
               path="/dashboard" 
               element={authStatus.isAuthenticated ? <Dashboard user={authStatus.user} onLogout={handleLogout} /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/admin" 
+              element={authStatus.isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/verify-email/:token" 

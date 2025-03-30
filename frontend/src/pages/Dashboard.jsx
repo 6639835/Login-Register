@@ -117,6 +117,14 @@ const Dashboard = ({ onLogout }) => {
                   >
                     Profile Settings
                   </button>
+                  {user?.id === 1 && (
+                    <a 
+                      href="/admin"
+                      className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                    >
+                      Admin Dashboard
+                    </a>
+                  )}
                   <button 
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     onClick={onLogout}

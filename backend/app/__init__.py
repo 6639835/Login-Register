@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
@@ -34,8 +33,19 @@ def create_app(test_config=None):
     # Configure the app
     configure_app(app, test_config)
 
-    # Enable CORS
-    CORS(app)
+    # 使用after_request手动添加CORS响应头
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
+    
+    # 处理OPTIONS请求
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def options_handler(path):
+        return '', 200
 
     # Initialize extensions with app
     initialize_extensions(app)

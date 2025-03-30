@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { loginUser, verify2FA } from '../services/apiService';
 import { Toaster, toast } from 'react-hot-toast';
 import { EyeIcon, EyeSlashIcon, ShieldCheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import SocialLogin from '../components/SocialLogin';
 
 const Login = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -164,23 +165,75 @@ const Login = ({ onLogin }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-8">
+    <div className="flex min-h-screen">
       <Toaster position="top-right" />
       
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-            create a new account
-          </Link>
-        </p>
+      {/* Left side - Decorative Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 via-secondary-500 to-primary-700 relative overflow-hidden animate-gradient-x">
+        <div className="absolute inset-0 p-12 flex flex-col justify-between text-white z-10">
+          <div>
+            <div className="text-2xl font-display font-bold tracking-tight">SecureAuth</div>
+          </div>
+          
+          <div className="max-w-md">
+            <h1 className="text-4xl font-display font-bold mb-6 animate-fade-in-up">Welcome back</h1>
+            <p className="text-white/80 text-lg mb-8 animate-fade-in-up animation-delay-150">
+              Sign in to your account to access your secure dashboard and manage your profile.
+            </p>
+            <div className="flex flex-col space-y-6 animate-fade-in-up animation-delay-300">
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm border border-white/10">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-white/90 font-medium">
+                  Secure authentication
+                </p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm border border-white/10">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-white/90 font-medium">
+                  Two-factor authentication
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-white/50 text-sm">
+            © {new Date().getFullYear()} SecureAuth App. All rights reserved.
+          </div>
+        </div>
+        
+        {/* Modern geometric background */}
+        <div className="absolute inset-0 bg-pattern opacity-10"></div>
+        
+        {/* 3D gradient spheres */}
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-gradient-to-br from-white/10 to-transparent blur-xl transform rotate-12 animate-float"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 rounded-full bg-gradient-to-tr from-white/5 to-transparent blur-xl transform -rotate-12 animate-float-delay"></div>
+        
+        {/* Background Decorative Shapes */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 backdrop-blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 backdrop-blur-3xl"></div>
       </div>
+      
+      {/* Right side - Login Form */}
+      <div className="w-full lg:w-1/2 py-12 px-6 flex items-center justify-center bg-gradient-to-b from-white to-gray-50">
+        <div className="w-full max-w-md p-6 animate-fade-in">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-display font-bold text-gray-900 mb-2">Sign in to your account</h2>
+            <p className="text-gray-600">
+              Or{' '}
+              <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
+                create a new account
+              </Link>
+            </p>
+          </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -272,40 +325,15 @@ const Login = ({ onLogin }) => {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              <button
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with Google</span>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/>
-                </svg>
-              </button>
-
-              <button
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with GitHub</span>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
-                </svg>
-              </button>
-
-              <button
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with Facebook</span>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path fillRule="evenodd" d="M20 10c0-5.523-4.477-10-10-10S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z" clipRule="evenodd" />
-                </svg>
-              </button>
+            <div className="mt-6">
+              <SocialLogin />
             </div>
           </div>
         </div>

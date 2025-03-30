@@ -1,73 +1,162 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { verifyEmail } from '../services/api';
+import { ArrowPathIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 const VerifyEmail = () => {
   const { token } = useParams();
-  const [status, setStatus] = useState('verifying'); // 'verifying', 'success', 'error'
-  const [message, setMessage] = useState('');
-
+  const [searchParams] = useSearchParams();
+  const reason = searchParams.get('reason');
+  const navigate = useNavigate();
+  
+  const [status, setStatus] = useState({
+    isLoading: true,
+    isSuccess: false,
+    message: 'Verifying your email address...',
+  });
+  
   useEffect(() => {
-    const verifyEmail = async () => {
+    // If reason parameter exists, it means there was an error from the backend redirect
+    if (reason) {
+      let errorMessage = 'Failed to verify your email address.';
+      
+      if (reason === 'used') {
+        errorMessage = 'This verification link has already been used.';
+      } else if (reason === 'invalid') {
+        errorMessage = 'This verification link is invalid or has expired.';
+      } else if (reason === 'user') {
+        errorMessage = 'User account not found for this verification link.';
+      }
+      
+      setStatus({
+        isLoading: false,
+        isSuccess: false,
+        message: errorMessage,
+      });
+      return;
+    }
+    
+    // If no token, don't attempt verification
+    if (!token) {
+      setStatus({
+        isLoading: false,
+        isSuccess: false,
+        message: 'No verification token provided.',
+      });
+      return;
+    }
+    
+    const verifyUserEmail = async () => {
       try {
-        // Redirect to backend verification endpoint
-        window.location.href = `http://localhost:5000/api/verify/email/${token}`;
+        const response = await verifyEmail(token);
+        setStatus({
+          isLoading: false,
+          isSuccess: true,
+          message: response.message || 'Email verified successfully!',
+        });
+        toast.success('Email verification successful!');
+        
+        // Auto-redirect after successful verification
+        setTimeout(() => {
+          navigate('/login?verified=true');
+        }, 3000);
       } catch (error) {
-        console.error('Verification error:', error);
-        setStatus('error');
-        setMessage('An error occurred during verification. Please try again later.');
+        setStatus({
+          isLoading: false,
+          isSuccess: false,
+          message: error.message || 'Failed to verify email address.',
+        });
+        toast.error(error.message || 'Verification failed');
       }
     };
-
-    if (token) {
-      verifyEmail();
-    } else {
-      setStatus('error');
-      setMessage('Invalid verification link.');
-    }
-  }, [token]);
+    
+    verifyUserEmail();
+  }, [token, reason, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-100 via-blue-50 to-indigo-100">
-      <div className="w-full max-w-md p-8 mx-auto text-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {status === 'verifying' && (
-            <>
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold text-gray-700">Verifying your email...</h2>
-              <p className="text-gray-500 mt-2">Please wait while we verify your email address.</p>
-            </>
-          )}
-          
-          {status === 'success' && (
-            <>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-700">Email Verified!</h2>
-              <p className="text-gray-500 mt-2">Your email has been successfully verified.</p>
-              <div className="mt-6">
-                <Link to="/dashboard" className="btn btn-primary">Go to Dashboard</Link>
-              </div>
-            </>
-          )}
-          
-          {status === 'error' && (
-            <>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-700">Verification Failed</h2>
-              <p className="text-gray-500 mt-2">{message}</p>
-              <div className="mt-6">
-                <Link to="/login" className="btn btn-primary">Back to Login</Link>
-              </div>
-            </>
-          )}
+    <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        {status.isLoading ? (
+          <ArrowPathIcon className="mx-auto h-12 w-12 text-primary-600 animate-spin" />
+        ) : status.isSuccess ? (
+          <CheckCircleIcon className="mx-auto h-12 w-12 text-green-500" />
+        ) : (
+          <ExclamationCircleIcon className="mx-auto h-12 w-12 text-red-500" />
+        )}
+        
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          {status.isLoading ? 'Verifying Email' : status.isSuccess ? 'Email Verified!' : 'Verification Failed'}
+        </h2>
+        
+        <p className="mt-2 text-center text-sm text-gray-600">
+          {status.message}
+        </p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
+          <div className="space-y-6">
+            {status.isSuccess ? (
+              <>
+                <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-green-800">
+                        Your email has been successfully verified. You will be redirected to the login page shortly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  >
+                    Go to login
+                  </Link>
+                </div>
+              </>
+            ) : !status.isLoading && (
+              <>
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <ExclamationCircleIcon className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-800">
+                        {status.message} Please try again or request a new verification link.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-center space-y-3">
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  >
+                    Go to login
+                  </Link>
+                  
+                  <div>
+                    <Link 
+                      to="/forgot-password" 
+                      className="font-medium text-primary-600 hover:text-primary-500 flex items-center justify-center mt-4"
+                    >
+                      <ArrowLeftIcon className="h-4 w-4 mr-1" />
+                      Request new verification
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

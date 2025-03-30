@@ -1,35 +1,73 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import OAuthCallback from './pages/OAuthCallback';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import { isAuthenticated, getCurrentUser } from './services/apiService';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState({
+    isAuthenticated: false,
+    isLoading: true,
+    user: null
+  });
+  
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Check if user is authenticated on initial load
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
+    const checkAuth = () => {
+      const authState = isAuthenticated();
+      const user = getCurrentUser();
+      
+      setAuthStatus({
+        isAuthenticated: authState,
+        user: user,
+        isLoading: false
+      });
+    };
+    
+    checkAuth();
+    
+    // Handle session expiry events
+    const handleSessionExpiry = () => {
+      setAuthStatus({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false
+      });
+      navigate('/login?session_expired=true');
+    };
+    
+    window.addEventListener('auth:sessionExpired', handleSessionExpiry);
+    
+    return () => {
+      window.removeEventListener('auth:sessionExpired', handleSessionExpiry);
+    };
+  }, [navigate]);
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
+  const handleLogin = (token) => {
+    setAuthStatus({
+      isAuthenticated: true,
+      isLoading: false,
+      user: getCurrentUser()
+    });
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
+  const handleLogout = () => {
+    setAuthStatus({
+      isAuthenticated: false,
+      isLoading: false,
+      user: null
+    });
   };
   
-  if (isLoading) {
+  if (authStatus.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
@@ -39,6 +77,31 @@ function App() {
 
   return (
     <div className="min-h-screen font-sans antialiased text-gray-900 bg-gray-50">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            borderRadius: '8px',
+            background: '#fff',
+            color: '#333',
+            boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)'
+          },
+          success: {
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      
       <div className="min-h-screen flex flex-col">
         {/* Background elements */}
         <div className="fixed inset-0 pointer-events-none z-0">
@@ -52,27 +115,47 @@ function App() {
           <Routes>
             <Route 
               path="/" 
-              element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
+              element={authStatus.isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/login" 
-              element={!isAuthenticated ? <Login onLogin={login} /> : <Navigate to="/dashboard" />} 
+              element={!authStatus.isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />} 
             />
             <Route 
               path="/register" 
-              element={!isAuthenticated ? <Register onLogin={login} /> : <Navigate to="/dashboard" />} 
+              element={!authStatus.isAuthenticated ? <Register onLogin={handleLogin} /> : <Navigate to="/dashboard" />} 
             />
             <Route 
               path="/oauth/callback" 
-              element={<OAuthCallback onLogin={login} />} 
+              element={<OAuthCallback onLogin={handleLogin} />} 
             />
             <Route 
               path="/dashboard" 
-              element={isAuthenticated ? <Dashboard onLogout={logout} /> : <Navigate to="/login" />} 
+              element={authStatus.isAuthenticated ? <Dashboard user={authStatus.user} onLogout={handleLogout} /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/verify-email/:token" 
               element={<VerifyEmail />} 
+            />
+            <Route 
+              path="/forgot-password" 
+              element={<ForgotPassword />} 
+            />
+            <Route 
+              path="/reset-password/:token" 
+              element={<ResetPassword onLogin={handleLogin} />} 
+            />
+            <Route 
+              path="/verification-success" 
+              element={<Navigate to="/login?verified=true" />} 
+            />
+            <Route 
+              path="/verification-failed" 
+              element={<VerifyEmail error={true} />} 
+            />
+            <Route 
+              path="*" 
+              element={<Navigate to="/" />} 
             />
           </Routes>
         </main>

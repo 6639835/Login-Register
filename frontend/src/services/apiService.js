@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 // Get API URL from environment variables with fallback
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const TOKEN_EXPIRY_DAYS = parseInt(import.meta.env.VITE_TOKEN_EXPIRY_DAYS || '7', 10);
@@ -40,13 +42,50 @@ const clearToken = () => {
   localStorage.removeItem('token');
 };
 
+// Store user data in memory and localStorage
+let currentUser = null;
+
+const saveUser = (user) => {
+  if (!user) return;
+  
+  currentUser = user;
+  try {
+    localStorage.setItem('user', JSON.stringify(user));
+  } catch (error) {
+    console.error('Error saving user to localStorage:', error);
+  }
+};
+
+const getUser = () => {
+  if (currentUser) return currentUser;
+  
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      currentUser = JSON.parse(userData);
+    }
+    return currentUser;
+  } catch (error) {
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
+const clearUser = () => {
+  currentUser = null;
+  localStorage.removeItem('user');
+};
+
 // Helper function to handle API requests
-const apiRequest = async (url, method = 'GET', data = null) => {
+const apiRequest = async (url, method = 'GET', data = null, options = {}) => {
+  const { showErrorToast = true, contentType = 'application/json', formData = false } = options;
   const token = getToken();
   
-  const headers = {
-    'Content-Type': 'application/json',
-  };
+  const headers = {};
+  
+  if (!formData) {
+    headers['Content-Type'] = contentType;
+  }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -58,23 +97,46 @@ const apiRequest = async (url, method = 'GET', data = null) => {
   };
   
   if (data) {
-    config.body = JSON.stringify(data);
+    config.body = formData ? data : JSON.stringify(data);
   }
   
   try {
     const response = await fetch(`${API_URL}${url}`, config);
     
+    // Try to parse JSON, but some responses might be empty
+    let result;
+    const contentTypeHeader = response.headers.get('content-type');
+    if (contentTypeHeader && contentTypeHeader.includes('application/json')) {
+      result = await response.json();
+    } else if (response.status === 204) {
+      result = { success: true };
+    } else {
+      const text = await response.text();
+      try {
+        result = text ? JSON.parse(text) : { success: response.ok };
+      } catch (e) {
+        result = { message: text || 'Unknown response' };
+      }
+    }
+    
     // Handle 401 Unauthorized globally - token expired or invalid
     if (response.status === 401) {
       clearToken();
-      window.location.href = '/login?session_expired=true';
+      clearUser();
+      window.dispatchEvent(new CustomEvent('auth:sessionExpired'));
+      if (showErrorToast) {
+        toast.error('Session expired. Please login again.');
+      }
       throw new Error('Session expired. Please login again.');
     }
     
-    const result = await response.json();
-    
     if (!response.ok) {
-      const error = new Error(result.message || 'Something went wrong');
+      const errorMessage = result.error || result.message || 'Something went wrong';
+      if (showErrorToast) {
+        toast.error(errorMessage);
+      }
+      
+      const error = new Error(errorMessage);
       error.response = {
         status: response.status,
         data: result
@@ -87,36 +149,32 @@ const apiRequest = async (url, method = 'GET', data = null) => {
       saveToken(result.token);
     }
     
+    // If response contains user data, update stored user
+    if (result.user) {
+      saveUser(result.user);
+    }
+    
     return result;
   } catch (error) {
-    console.error('API request error:', error);
+    if (error.message !== 'Session expired. Please login again.' && showErrorToast) {
+      toast.error(error.message || 'Network error');
+    }
     throw error;
   }
 };
 
 // Auth services
 export const registerUser = (userData) => {
-  return apiRequest('/auth/register', 'POST', userData)
-    .then(response => {
-      if (response.token) {
-        saveToken(response.token);
-      }
-      return response;
-    });
+  return apiRequest('/auth/register', 'POST', userData);
 };
 
 export const loginUser = (credentials) => {
-  return apiRequest('/auth/login', 'POST', credentials)
-    .then(response => {
-      if (response.token) {
-        saveToken(response.token);
-      }
-      return response;
-    });
+  return apiRequest('/auth/login', 'POST', credentials);
 };
 
 export const logoutUser = () => {
   clearToken();
+  clearUser();
   return Promise.resolve();
 };
 
@@ -124,51 +182,63 @@ export const forgotPassword = (email) => {
   return apiRequest('/auth/forgot-password', 'POST', { email });
 };
 
-// Two-factor authentication services
-export const verify2FA = (authData) => {
-  return apiRequest('/auth/2fa/verify', 'POST', authData);
+export const resetPassword = (token, password) => {
+  return apiRequest('/auth/reset-password', 'POST', { token, password });
 };
 
-export const verifyBackupCode = (authData) => {
-  return apiRequest('/auth/2fa/backup-code', 'POST', authData);
+// Two-factor authentication services
+export const verify2FA = (userId, token) => {
+  return apiRequest('/auth/verify-2fa', 'POST', { user_id: userId, token });
 };
 
 export const setup2FA = () => {
-  return apiRequest('/auth/2fa/setup', 'POST');
+  return apiRequest('/auth/setup-2fa', 'POST');
 };
 
-export const verify2FASetup = (code) => {
-  return apiRequest('/auth/2fa/verify-setup', 'POST', { code });
+export const confirm2FA = (token) => {
+  return apiRequest('/auth/confirm-2fa', 'POST', { token });
 };
 
-export const disable2FA = () => {
-  return apiRequest('/auth/2fa/disable', 'POST');
-};
-
-// Verification services
-export const resendVerificationEmail = (email) => {
-  return apiRequest('/verify/resend', 'POST', { email });
-};
-
-export const checkVerificationStatus = () => {
-  return apiRequest('/users/verification-status');
+export const disable2FA = (password) => {
+  return apiRequest('/auth/disable-2fa', 'POST', { password });
 };
 
 // User services
+export const getProfile = () => {
+  return apiRequest('/user/profile');
+};
+
+export const updateProfile = (profileData) => {
+  return apiRequest('/user/profile', 'PUT', profileData);
+};
+
+export const changePassword = (currentPassword, newPassword) => {
+  return apiRequest('/user/change-password', 'POST', {
+    current_password: currentPassword,
+    new_password: newPassword
+  });
+};
+
+export const getLoginHistory = (limit = 10) => {
+  return apiRequest(`/user/login-history?limit=${limit}`);
+};
+
+// Email verification services
+export const checkVerificationToken = (token) => {
+  return apiRequest(`/verify-token-status/${token}`);
+};
+
+export const resendVerificationEmail = (email) => {
+  return apiRequest('/auth/resend-verification', 'POST', { email });
+};
+
+// Auth check
+export const isAuthenticated = () => {
+  return !!getToken();
+};
+
 export const getCurrentUser = () => {
-  return apiRequest('/users/me');
-};
-
-export const updateProfile = (userData) => {
-  return apiRequest('/users/update-profile', 'PUT', userData);
-};
-
-export const changePassword = (passwordData) => {
-  return apiRequest('/users/change-password', 'PUT', passwordData);
-};
-
-export const deleteAccount = () => {
-  return apiRequest('/users/delete-account', 'DELETE');
+  return getUser();
 };
 
 export default {
@@ -176,15 +246,17 @@ export default {
   loginUser,
   logoutUser,
   forgotPassword,
+  resetPassword,
   verify2FA,
-  verifyBackupCode,
   setup2FA,
-  verify2FASetup,
+  confirm2FA,
   disable2FA,
-  resendVerificationEmail,
-  checkVerificationStatus,
-  getCurrentUser,
+  getProfile,
   updateProfile,
   changePassword,
-  deleteAccount
+  getLoginHistory,
+  checkVerificationToken,
+  resendVerificationEmail,
+  isAuthenticated,
+  getCurrentUser,
 }; 

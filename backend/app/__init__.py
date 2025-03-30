@@ -24,10 +24,39 @@ mail = Mail()
 migrate = Migrate()
 
 def create_app(test_config=None):
+    """Application factory function to create and configure Flask app."""
     # Create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     
     # Configure logging
+    configure_logging(app)
+    
+    # Configure the app
+    configure_app(app, test_config)
+
+    # Enable CORS
+    CORS(app)
+
+    # Initialize extensions with app
+    initialize_extensions(app)
+    
+    # Register OAuth providers
+    register_oauth_providers()
+
+    # Create instance directory
+    create_instance_dir(app)
+
+    # Register blueprints
+    register_blueprints(app)
+
+    # Create database tables
+    with app.app_context():
+        db.create_all()
+
+    return app
+
+def configure_logging(app):
+    """Configure application logging."""
     if not app.debug:
         if not os.path.exists('logs'):
             os.mkdir('logs')
@@ -39,8 +68,9 @@ def create_app(test_config=None):
         app.logger.addHandler(file_handler)
         app.logger.setLevel(logging.INFO)
         app.logger.info('Application startup')
-    
-    # Configure the app
+
+def configure_app(app, test_config):
+    """Apply application configuration settings."""
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev_key'),
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URI', 'sqlite:///dev.db'),
@@ -62,18 +92,17 @@ def create_app(test_config=None):
     if test_config is not None:
         app.config.update(test_config)
 
-    # Enable CORS
-    CORS(app)
-
-    # Initialize extensions with app
+def initialize_extensions(app):
+    """Initialize Flask extensions."""
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
     oauth.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
-    
-    # Register OAuth providers
+
+def register_oauth_providers():
+    """Register OAuth providers for social login."""
     oauth.register(
         name='github',
         client_id=os.environ.get('GITHUB_CLIENT_ID'),
@@ -110,21 +139,17 @@ def create_app(test_config=None):
         client_kwargs={'scope': 'email'},
     )
 
-    # Create instance directory
+def create_instance_dir(app):
+    """Create instance directory if it doesn't exist."""
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
 
-    # Register blueprints
+def register_blueprints(app):
+    """Register Flask blueprints."""
     from .routes import auth_bp, user_bp
     from .verify_routes import verify_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
-    app.register_blueprint(verify_bp)
-
-    # Create database tables
-    with app.app_context():
-        db.create_all()
-
-    return app 
+    app.register_blueprint(verify_bp) 

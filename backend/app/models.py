@@ -8,19 +8,41 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import base64
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Get encryption key from environment or generate one
 def get_encryption_key():
     key = os.environ.get('DATA_ENCRYPTION_KEY')
     if not key:
-        # Use secret key with a salt to derive encryption key
+        # Use a more secure approach for key derivation
+        logger.warning("DATA_ENCRYPTION_KEY not set. Using derived key (not recommended for production).")
+        
+        # For production, use an externally managed secure key
         secret = os.environ.get('SECRET_KEY', 'fallback_secret_key')
-        salt = b'secure_salt_for_encryption'  # In production, this should be stored securely
+        
+        # Use a different salt for each deployment
+        salt_str = os.environ.get('ENCRYPTION_SALT')
+        if not salt_str:
+            # If no salt is provided, create one - but this should be stored
+            # across application restarts in a production environment
+            salt = os.urandom(16)
+            logger.warning("ENCRYPTION_SALT not set. Generated random salt.")
+        else:
+            # Convert hex string to bytes
+            try:
+                salt = bytes.fromhex(salt_str)
+            except ValueError:
+                logger.error("Invalid ENCRYPTION_SALT format. Must be hex string.")
+                salt = os.urandom(16)
+        
+        # Use a stronger KDF with more iterations
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
-            iterations=100000,
+            iterations=480000,  # OWASP recommended minimum iterations
         )
         key = base64.urlsafe_b64encode(kdf.derive(secret.encode()))
     return key
@@ -31,18 +53,18 @@ CIPHER = Fernet(get_encryption_key())
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=True)  # Nullable for social auth users
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Social auth fields
-    auth_type = db.Column(db.String(20), default='email')  # 'email', 'github', 'google', 'facebook'
-    social_id = db.Column(db.String(100), unique=True, nullable=True)
+    auth_type = db.Column(db.String(20), default='email', index=True)  # 'email', 'github', 'google', 'facebook'
+    social_id = db.Column(db.String(100), unique=True, nullable=True, index=True)
     profile_image = db.Column(db.String(255), nullable=True)
     
     # Email verification fields
-    is_verified = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=False, index=True)
     verified_at = db.Column(db.DateTime, nullable=True)
 
     # 2FA fields - encrypted storage
@@ -188,9 +210,9 @@ class User(db.Model):
 class TokenBlacklist(db.Model):
     """Store used tokens to prevent reuse (for email verification, password reset, etc.)"""
     id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(500), unique=True, nullable=False)
-    blacklisted_at = db.Column(db.DateTime, default=datetime.utcnow)
-    token_type = db.Column(db.String(20), default='verification')  # 'verification', 'reset', etc.
+    token = db.Column(db.String(500), unique=True, nullable=False, index=True)
+    blacklisted_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    token_type = db.Column(db.String(20), default='verification', index=True)  # 'verification', 'reset', etc.
     
     @staticmethod
     def is_blacklisted(token):

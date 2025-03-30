@@ -13,6 +13,13 @@ from io import BytesIO
 import base64
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
+import logging
+from functools import wraps
+import time
+import hashlib
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 # Create blueprints
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -20,6 +27,60 @@ user_bp = Blueprint('user', __name__, url_prefix='/api/users')
 
 # Email validation regex
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+# Simple in-memory rate limiter (for demonstration purposes)
+# In production, use Redis or a dedicated rate limiting solution
+class RateLimiter:
+    def __init__(self, max_requests=5, window=60):
+        self.max_requests = max_requests  # Max requests per window
+        self.window = window  # Window in seconds
+        self.clients = {}
+    
+    def is_rate_limited(self, client_id):
+        now = time.time()
+        
+        # Create a new entry if client doesn't exist
+        if client_id not in self.clients:
+            self.clients[client_id] = []
+        
+        # Clean old requests
+        self.clients[client_id] = [timestamp for timestamp in self.clients[client_id] 
+                                   if timestamp > now - self.window]
+        
+        # Check if rate limited
+        if len(self.clients[client_id]) >= self.max_requests:
+            return True
+        
+        # Add this request
+        self.clients[client_id].append(now)
+        return False
+
+# Initialize rate limiters
+login_limiter = RateLimiter(max_requests=5, window=60)  # 5 requests per minute
+registration_limiter = RateLimiter(max_requests=3, window=300)  # 3 requests per 5 minutes
+two_factor_limiter = RateLimiter(max_requests=5, window=300)  # 5 requests per 5 minutes
+
+def rate_limit(limiter):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Get client identifier - prefer X-Forwarded-For for proxies
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            
+            # For APIs that require authentication, can also use the user id
+            # to prevent one user from affecting others behind same IP
+            user_agent = request.headers.get('User-Agent', '')
+            
+            # Create a unique client ID based on IP and user agent
+            client_id = hashlib.md5(f"{ip}:{user_agent}".encode()).hexdigest()
+            
+            if limiter.is_rate_limited(client_id):
+                logger.warning(f"Rate limit exceeded for client {ip}")
+                return jsonify({"message": "Rate limit exceeded. Please try again later."}), 429
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 # Helper function to get user and token
 def get_user_and_token(user):
@@ -33,10 +94,11 @@ def get_user_and_token(user):
 # Authentication routes
 @auth_bp.route('/register', methods=['POST'])
 @cross_origin()
+@rate_limit(registration_limiter)
 def register():
-    print("Register endpoint called")
+    logger.info("Register endpoint called")
     data = request.get_json()
-    print(f"Received registration data: {data}")
+    logger.debug(f"Received registration data: {data}")
     
     # Validate required fields
     if not all(k in data for k in ('name', 'email', 'password')):
@@ -185,10 +247,11 @@ def resend_verification():
 
 @auth_bp.route('/login', methods=['POST'])
 @cross_origin()
+@rate_limit(login_limiter)
 def login():
-    print("Login endpoint called")
+    logger.info("Login endpoint called")
     data = request.get_json()
-    print(f"Received login data: {data}")
+    logger.debug(f"Received login data: {data}")
     
     # Validate required fields
     if not all(k in data for k in ('email', 'password')):
@@ -643,6 +706,7 @@ def verify_2fa_setup():
 
 @auth_bp.route('/2fa/verify', methods=['POST'])
 @cross_origin()
+@rate_limit(two_factor_limiter)
 def verify_2fa():
     data = request.get_json()
     

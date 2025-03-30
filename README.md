@@ -1,160 +1,151 @@
-# Modern Login & Register System
+# SecureAuth - Authentication System
 
-A modern authentication system with a beautiful UI, featuring login, registration, and Two-Factor Authentication (2FA).
+A comprehensive authentication system with modern security features including OAuth social login, two-factor authentication, and email verification.
 
 ## Features
 
-- User registration with validation
-- User login with JWT authentication
-- Two-Factor Authentication (2FA)
-  - TOTP-based authentication (compatible with Google Authenticator, Authy, etc.)
-  - QR code setup for easy configuration
-  - Backup codes for account recovery
-  - Rate limiting and temporary lockout for security
-- Social Authentication
-  - Google OAuth2
-  - GitHub OAuth
-  - Facebook OAuth
+- User registration and login
 - Email verification
-- Modern, responsive UI built with React and Tailwind CSS
-- Flask backend with SQLAlchemy for database management
-- Secure password hashing using bcrypt
+- Two-factor authentication (TOTP) with backup codes
+- Social authentication (GitHub, Google, Facebook)
+- JWT-based authentication
+- Rate limiting on sensitive endpoints
+- Account management (profile update, password change)
+- Modern, responsive UI with Tailwind CSS
 
-## Project Structure
+## Tech Stack
 
-```
-├── frontend/             # React frontend
-│   ├── src/              # Source code
-│   │   ├── components/   # Reusable components
-│   │   ├── pages/        # Page components
-│   │   ├── App.jsx       # Main application component
-│   │   └── main.jsx      # Entry point
-│   ├── public/           # Static assets
-│   └── package.json      # Dependencies and scripts
-├── backend/              # Flask backend
-│   ├── app/              # Application package
-│   │   ├── __init__.py   # App initialization
-│   │   ├── models.py     # Database models
-│   │   ├── routes.py     # API routes
-│   │   ├── verify_routes.py  # Email verification routes
-│   │   └── email_utils.py    # Email utilities
-│   ├── migrations/       # Database migrations
-│   ├── requirements.txt  # Python dependencies
-│   └── run.py           # Entry point
-└── README.md            # Project documentation
-```
+### Backend
+- Flask (Python web framework)
+- SQLAlchemy (ORM)
+- Flask-JWT-Extended (JWT authentication)
+- Flask-Mail (email services)
+- Flask-Bcrypt (password hashing)
+- Authlib (OAuth implementation)
+- PyOTP (TOTP implementation)
 
-## Getting Started
+### Frontend
+- React
+- React Router
+- Tailwind CSS
+- Vite (build tool)
+
+## Installation
 
 ### Prerequisites
+- Python 3.9+
+- Node.js 16+
+- npm or yarn
 
-- Node.js and npm
-- Python 3.8+
-- pip
+### Using Docker (Recommended)
 
-### Installation
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/secure-auth.git
+   cd secure-auth
+   ```
 
-1. Clone the repository
-2. Set up the frontend:
+2. Copy example env files and configure:
+   ```
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   ```
+   
+3. Edit the .env files with your configuration
 
-```bash
-cd frontend
-npm install
-npm start
-```
+4. Build and run with docker-compose:
+   ```
+   docker-compose up -d
+   ```
 
-3. Set up the backend:
+5. Access the application at http://localhost
 
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-flask db upgrade  # Apply database migrations
-python run.py
-```
+### Manual Setup
 
-4. Configure environment variables:
+#### Backend Setup
 
-Create a `.env` file in the backend directory with the following variables:
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-```env
-SECRET_KEY=your_secret_key
-JWT_SECRET_KEY=your_jwt_secret
-DATA_ENCRYPTION_KEY=your_data_encryption_key  # Used for encrypting sensitive data
-DATABASE_URI=sqlite:///dev.db  # or your database URI
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-# Email Configuration
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
-MAIL_DEFAULT_SENDER=your_email@gmail.com
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-# OAuth Configuration
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-FACEBOOK_CLIENT_ID=your_facebook_client_id
-FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
-```
+4. Copy environment template and configure:
+   ```
+   cp .env.example .env
+   ```
+   
+5. Edit .env with your configuration (database, email, OAuth credentials)
 
-## API Endpoints
+6. Run the application:
+   ```
+   flask run
+   ```
 
-### Authentication
+#### Frontend Setup
 
-- `POST /api/auth/register`: Register a new user
-- `POST /api/auth/login`: Login with email and password
-- `POST /api/auth/logout`: Logout and invalidate token
+1. Navigate to the frontend directory:
+   ```
+   cd frontend
+   ```
 
-### Two-Factor Authentication (2FA)
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-- `POST /api/auth/2fa/setup`: Initialize 2FA setup
-- `POST /api/auth/2fa/verify-setup`: Complete 2FA setup
-- `POST /api/auth/2fa/verify`: Verify 2FA token during login
-- `POST /api/auth/2fa/backup-code`: Use backup code for 2FA
-- `POST /api/auth/2fa/disable`: Disable 2FA
+3. Copy environment template and configure:
+   ```
+   cp .env.example .env
+   ```
 
-### Social Authentication
+4. Start the development server:
+   ```
+   npm run dev
+   ```
 
-- `GET /api/auth/login/github`: Initiate GitHub OAuth login
-- `GET /api/auth/login/google`: Initiate Google OAuth login
-- `GET /api/auth/login/facebook`: Initiate Facebook OAuth login
+5. Access the application at http://localhost:3000
 
-### Email Verification
+## Configuration
 
-- `GET /api/verify/email/<token>`: Verify email address
-- `POST /api/verify/resend`: Resend verification email
+### Backend Configuration (.env)
 
-## Security Features
+- `SECRET_KEY` - Flask application secret key
+- `JWT_SECRET_KEY` - Secret key for JWT token generation
+- `DATA_ENCRYPTION_KEY` - Key for encrypting sensitive data
+- `ENCRYPTION_SALT` - Salt for key derivation (if not using direct encryption key)
+- `DATABASE_URI` - SQLAlchemy database connection string
+- `MAIL_*` - Email configuration for sending verification emails
+- `*_CLIENT_ID` and `*_CLIENT_SECRET` - OAuth provider credentials
 
-- Password hashing with bcrypt
-- JWT-based authentication
-- Two-Factor Authentication (2FA)
-  - TOTP-based authentication
-  - Rate limiting (5 attempts)
-  - 15-minute lockout after failed attempts
-  - Encrypted storage of 2FA secrets
-  - Secure backup codes stored with encryption
-- Email verification
-- CORS protection
-- Environment variable configuration
-- SQL injection protection through SQLAlchemy
-- Encrypted sensitive data storage using Fernet symmetric encryption
-- PBKDF2 key derivation for encryption keys
+### Frontend Configuration (.env)
 
-## Technologies Used
+- `VITE_API_URL` - Backend API URL
+- `VITE_TOKEN_EXPIRY_DAYS` - JWT token expiry in days
 
-- **Frontend**: React, Tailwind CSS, Axios
-- **Backend**: Flask, SQLAlchemy, JWT
-- **Database**: SQLite (development), can be configured for PostgreSQL, MySQL, etc.
-- **Authentication**: JWT, OAuth2, TOTP (2FA)
-- **Security**: bcrypt, cryptography library, rate limiting
-- **Email**: Flask-Mail
-- **Other**: Flask-Migrate, pyotp, qrcode
+## Security Considerations
+
+- Use HTTPS in production
+- Regularly rotate encryption keys
+- Store sensitive keys in a secure vault in production
+- Follow OAuth provider best practices
+- Consider implementing HTTP-only cookies for token storage
+- Implement proper database backups
 
 ## License
 
-This project is open source and available under the MIT License.
+[MIT License](LICENSE)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

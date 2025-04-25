@@ -6,21 +6,21 @@
 <div class="auth-page">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="auth-card" data-aos="fade-up" data-aos-duration="800">
+            <div class="col-lg-5 col-md-7 col-sm-9">
+                <div class="auth-card animate-zoomIn">
                     <div class="auth-header">
                         <h2 class="auth-title">Create Account</h2>
                         <p class="auth-subtitle">Join our community today</p>
                     </div>
                     
                     <div class="social-login">
-                        <a href="#" class="social-btn facebook-btn">
+                        <a href="#" class="social-btn facebook-btn" data-tooltip="Sign up with Facebook">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="social-btn google-btn">
+                        <a href="#" class="social-btn google-btn" data-tooltip="Sign up with Google">
                             <i class="fab fa-google"></i>
                         </a>
-                        <a href="#" class="social-btn twitter-btn">
+                        <a href="#" class="social-btn twitter-btn" data-tooltip="Sign up with Twitter">
                             <i class="fab fa-twitter"></i>
                         </a>
                     </div>
@@ -29,69 +29,101 @@
                         <p class="text-muted">or use your email</p>
                     </div>
                     
-                    <form method="POST" action="">
+                    <form method="POST" action="" id="registerForm">
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
-                            {{ form.username.label(class="form-label") }}
-                            {% if form.username.errors %}
-                                {{ form.username(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.username.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.username(class="form-control", placeholder="Choose a username") }}
-                            {% endif %}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                {% if form.username.errors %}
+                                    {{ form.username(class="form-control is-invalid border-start-0", placeholder="Username") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.username.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.username(class="form-control border-start-0", placeholder="Username") }}
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {% if form.email.errors %}
-                                {{ form.email(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.email.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.email(class="form-control", placeholder="Enter your email") }}
-                            {% endif %}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-envelope text-muted"></i>
+                                </span>
+                                {% if form.email.errors %}
+                                    {{ form.email(class="form-control is-invalid border-start-0", placeholder="Email Address") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.email(class="form-control border-start-0", placeholder="Email Address") }}
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {% if form.password.errors %}
-                                {{ form.password(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.password.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.password(class="form-control", placeholder="Create a password") }}
-                            {% endif %}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                {% if form.password.errors %}
+                                    {{ form.password(class="form-control is-invalid border-start-0", placeholder="Create Password", id="password") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.password.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.password(class="form-control border-start-0", placeholder="Create Password", id="password") }}
+                                {% endif %}
+                                <button type="button" class="input-group-text bg-light border-start-0" id="togglePassword">
+                                    <i class="far fa-eye text-muted"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength-meter mt-2">
+                                <div id="passwordStrength"></div>
+                            </div>
+                            <small id="passwordStrengthText" class="password-strength-text text-muted"></small>
                         </div>
-                        <div class="mb-3">
-                            {{ form.confirm_password.label(class="form-label") }}
-                            {% if form.confirm_password.errors %}
-                                {{ form.confirm_password(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.confirm_password.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
-                            {% endif %}
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                {% if form.confirm_password.errors %}
+                                    {{ form.confirm_password(class="form-control is-invalid border-start-0", placeholder="Confirm Password", id="confirmPassword") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.confirm_password.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.confirm_password(class="form-control border-start-0", placeholder="Confirm Password", id="confirmPassword") }}
+                                {% endif %}
+                                <button type="button" class="input-group-text bg-light border-start-0" id="toggleConfirmPassword">
+                                    <i class="far fa-eye text-muted"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="mb-3 form-check">
+                        <div class="mb-4 form-check">
                             <input type="checkbox" class="form-check-input" id="terms" required>
-                            <label class="form-check-label" for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
                         </div>
                         <div class="d-grid gap-2 mb-3">
-                            {{ form.submit(class="btn btn-primary") }}
+                            <button type="submit" class="btn btn-primary" id="registerButton">
+                                <span class="btn-text">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </span>
+                            </button>
                         </div>
                         <div class="text-center">
-                            <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+                            <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}" class="text-primary fw-semibold">Sign In</a></p>
                         </div>
                     </form>
                 </div>
@@ -99,4 +131,98 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+        
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                togglePassword.querySelector('i').classList.toggle('fa-eye');
+                togglePassword.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        // Confirm password toggle visibility
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (toggleConfirmPassword && confirmPassword) {
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPassword.setAttribute('type', type);
+                toggleConfirmPassword.querySelector('i').classList.toggle('fa-eye');
+                toggleConfirmPassword.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        // Password strength meter
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordStrengthText = document.getElementById('passwordStrengthText');
+        
+        if (password && passwordStrength && passwordStrengthText) {
+            password.addEventListener('input', function() {
+                const value = password.value;
+                
+                // Check password strength
+                let strength = 0;
+                let feedback = '';
+                
+                if (value.length > 0) {
+                    // Length check
+                    if (value.length >= 8) strength += 1;
+                    
+                    // Lowercase and uppercase check
+                    if (value.match(/[a-z]/) && value.match(/[A-Z]/)) strength += 1;
+                    
+                    // Number check
+                    if (value.match(/\d/)) strength += 1;
+                    
+                    // Special character check
+                    if (value.match(/[^a-zA-Z\d]/)) strength += 1;
+                    
+                    // Set appropriate class and text based on strength
+                    if (strength === 0) {
+                        passwordStrength.className = '';
+                        passwordStrengthText.textContent = '';
+                    } else if (strength === 1) {
+                        passwordStrength.className = 'strength-weak';
+                        passwordStrengthText.textContent = 'Weak';
+                        passwordStrengthText.className = 'password-strength-text text-danger';
+                    } else if (strength === 2) {
+                        passwordStrength.className = 'strength-medium';
+                        passwordStrengthText.textContent = 'Medium';
+                        passwordStrengthText.className = 'password-strength-text text-warning';
+                    } else if (strength === 3) {
+                        passwordStrength.className = 'strength-good';
+                        passwordStrengthText.textContent = 'Good';
+                        passwordStrengthText.className = 'password-strength-text text-info';
+                    } else {
+                        passwordStrength.className = 'strength-strong';
+                        passwordStrengthText.textContent = 'Strong';
+                        passwordStrengthText.className = 'password-strength-text text-success';
+                    }
+                } else {
+                    passwordStrength.className = '';
+                    passwordStrengthText.textContent = '';
+                }
+            });
+        }
+        
+        // Register form submission
+        const registerForm = document.getElementById('registerForm');
+        const registerButton = document.getElementById('registerButton');
+        
+        if (registerForm && registerButton) {
+            registerForm.addEventListener('submit', function() {
+                registerButton.classList.add('btn-loading');
+                registerButton.disabled = true;
+            });
+        }
+    });
+</script>
 {% endblock %} 

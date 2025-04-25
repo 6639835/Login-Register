@@ -1,423 +1,600 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard | Home{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="dashboard-container py-4">
     <!-- Welcome Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-primary text-white" data-aos="fade-up">
+    <section class="welcome-section mb-4">
+        <div class="container">
+            <div class="glass-card animate-fadeInUp">
                 <div class="card-body p-4 p-lg-5">
                     <div class="row align-items-center">
                         <div class="col-lg-8">
-                            <h2 class="fw-bold mb-3">Welcome back, {{ current_user.username }}!</h2>
-                            <p class="lead opacity-75 mb-4">Your account is active and in good standing. Here's an overview of your recent activity.</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ url_for('profile') }}" class="btn btn-light">View Profile</a>
-                                <a href="{{ url_for('settings') }}" class="btn btn-outline-light">Account Settings</a>
-                            </div>
+                            <span class="badge bg-primary mb-2">Home</span>
+                            <h2 class="fw-bold mb-1">Welcome to your dashboard, {{ current_user.username }}! 👋</h2>
+                            <p class="text-muted">You're now logged in. Here's what's happening with your account today.</p>
                         </div>
-                        <div class="col-lg-4 text-center d-none d-lg-block">
-                            <i class="fas fa-chart-line fa-6x opacity-25"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Stats Row -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-4 mb-md-0">
-            <div class="card border-0 rounded-3 shadow-sm h-100" data-aos="fade-up" data-aos-delay="100">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0">Login Activity</h6>
-                        <div class="icon-circle bg-primary bg-opacity-10">
-                            <i class="fas fa-sign-in-alt text-primary"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-1">12</h3>
-                    <p class="text-muted small">Logins in the last 30 days</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4 mb-md-0">
-            <div class="card border-0 rounded-3 shadow-sm h-100" data-aos="fade-up" data-aos-delay="200">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0">Profile Completion</h6>
-                        <div class="icon-circle bg-success bg-opacity-10">
-                            <i class="fas fa-user-check text-success"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-1">85%</h3>
-                    <p class="text-muted small">Complete your profile for full benefits</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4 mb-md-0">
-            <div class="card border-0 rounded-3 shadow-sm h-100" data-aos="fade-up" data-aos-delay="300">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0">Security Score</h6>
-                        <div class="icon-circle bg-warning bg-opacity-10">
-                            <i class="fas fa-shield-alt text-warning"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-1">65/100</h3>
-                    <p class="text-muted small">Enable 2FA for better security</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 rounded-3 shadow-sm h-100" data-aos="fade-up" data-aos-delay="400">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0">Account Age</h6>
-                        <div class="icon-circle bg-info bg-opacity-10">
-                            <i class="fas fa-calendar-alt text-info"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-1">30 days</h3>
-                    <p class="text-muted small">Member since {{ '01/01/2023' }}</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Content Row -->
-    <div class="row">
-        <!-- Recent Activity -->
-        <div class="col-lg-8 mb-4 mb-lg-0">
-            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0"><i class="fas fa-history text-primary me-2"></i>Recent Activity</h5>
-                    <button class="btn btn-sm btn-outline-primary">View All</button>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-primary bg-opacity-10 me-3">
-                                    <i class="fas fa-sign-in-alt text-primary"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Successful login</h6>
-                                        <span class="badge bg-light text-dark">Just now</span>
-                                    </div>
-                                    <p class="text-muted small mb-0">Chrome on Windows • New York, USA</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-success bg-opacity-10 me-3">
-                                    <i class="fas fa-user-edit text-success"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Profile updated</h6>
-                                        <span class="badge bg-light text-dark">2 days ago</span>
-                                    </div>
-                                    <p class="text-muted small mb-0">You updated your profile information</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-warning bg-opacity-10 me-3">
-                                    <i class="fas fa-key text-warning"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Password changed</h6>
-                                        <span class="badge bg-light text-dark">5 days ago</span>
-                                    </div>
-                                    <p class="text-muted small mb-0">Your account password was successfully updated</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-info bg-opacity-10 me-3">
-                                    <i class="fas fa-envelope-open-text text-info"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Email verified</h6>
-                                        <span class="badge bg-light text-dark">1 week ago</span>
-                                    </div>
-                                    <p class="text-muted small mb-0">Your email address has been successfully verified</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-primary bg-opacity-10 me-3">
-                                    <i class="fas fa-user-plus text-primary"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Account created</h6>
-                                        <span class="badge bg-light text-dark">30 days ago</span>
-                                    </div>
-                                    <p class="text-muted small mb-0">Welcome to our platform! Your account was created</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Recommended Actions -->
-            <div class="card border-0 rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="200">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h5 class="mb-0"><i class="fas fa-tasks text-primary me-2"></i>Recommended Actions</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-warning bg-opacity-10 me-3">
-                                    <i class="fas fa-shield-alt text-warning"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Enable Two-Factor Authentication</h6>
-                                    <p class="text-muted small mb-0">Enhance your account security with 2FA</p>
-                                </div>
-                                <a href="{{ url_for('settings') }}#security-section" class="btn btn-sm btn-outline-primary">Enable</a>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-success bg-opacity-10 me-3">
-                                    <i class="fas fa-user-edit text-success"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Complete Your Profile</h6>
-                                    <p class="text-muted small mb-0">Add more details to your profile for a better experience</p>
-                                </div>
-                                <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline-primary">Complete</a>
-                            </div>
-                        </div>
-                        
-                        <div class="list-group-item border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-info bg-opacity-10 me-3">
-                                    <i class="fas fa-bell text-info"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Customize Notification Preferences</h6>
-                                    <p class="text-muted small mb-0">Choose which notifications you'd like to receive</p>
-                                </div>
-                                <a href="{{ url_for('settings') }}#notification-section" class="btn btn-sm btn-outline-primary">Customize</a>
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <div class="d-flex gap-2 justify-content-lg-end">
+                                <a href="{{ url_for('profile') }}" class="btn btn-primary">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                                <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-cog me-2"></i>Settings
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Account Health -->
-            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h5 class="mb-0"><i class="fas fa-heartbeat text-primary me-2"></i>Account Health</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0">Security Score</h6>
-                            <span class="badge bg-warning text-dark">Medium</span>
-                        </div>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <p class="text-muted small mb-0">Enable 2FA to improve your security score</p>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0">Profile Completion</h6>
-                            <span class="badge bg-success text-dark">Good</span>
-                        </div>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <p class="text-muted small mb-0">Add a bio to complete your profile</p>
-                    </div>
-                    
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0">Email Verification</h6>
-                            <span class="badge bg-success text-dark">Verified</span>
-                        </div>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <p class="text-muted small mb-0">Your email has been successfully verified</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="400">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h5 class="mb-0"><i class="fas fa-bolt text-primary me-2"></i>Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-user me-2"></i>View Profile</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                        <a href="{{ url_for('settings') }}#security-section" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-lock me-2"></i>Security Settings</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                        <a href="{{ url_for('settings') }}#notification-section" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-bell me-2"></i>Notification Preferences</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                        <a href="#" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-question-circle me-2"></i>Help Center</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-sign-out-alt me-2"></i>Log Out</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tips & Resources -->
-            <div class="card border-0 rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="500">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h5 class="mb-0"><i class="fas fa-lightbulb text-primary me-2"></i>Tips & Resources</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-primary bg-opacity-10 me-3">
-                                    <i class="fas fa-shield-alt text-primary"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">5 Ways to Keep Your Account Secure</h6>
-                                    <p class="text-muted small mb-0">Learn best practices for account security</p>
-                                </div>
-                            </div>
-                        </a>
-                        
-                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-success bg-opacity-10 me-3">
-                                    <i class="fas fa-book text-success"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Getting Started Guide</h6>
-                                    <p class="text-muted small mb-0">Everything you need to know as a new user</p>
-                                </div>
-                            </div>
-                        </a>
-                        
-                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 px-4">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle bg-info bg-opacity-10 me-3">
-                                    <i class="fas fa-question-circle text-info"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Frequently Asked Questions</h6>
-                                    <p class="text-muted small mb-0">Find answers to common questions</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+    </section>
 
-{% block head %}
+    <!-- Stats Overview -->
+    <section class="stats-section mb-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="dashboard-stat animate-fadeInUp" style="animation-delay: 0.1s;">
+                        <div class="dashboard-stat-icon" style="background: rgba(67, 97, 238, 0.1);">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                        </div>
+                        <div class="dashboard-stat-content">
+                            <p class="dashboard-stat-label">Security Score</p>
+                            <h3 class="dashboard-stat-value">75<span class="fs-6">%</span></h3>
+                            <a href="{{ url_for('settings') }}#security-section" class="small text-primary">Improve <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dashboard-stat animate-fadeInUp" style="animation-delay: 0.2s;">
+                        <div class="dashboard-stat-icon" style="background: rgba(42, 157, 143, 0.1);">
+                            <i class="fas fa-calendar-check text-success"></i>
+                        </div>
+                        <div class="dashboard-stat-content">
+                            <p class="dashboard-stat-label">Member Since</p>
+                            <h3 class="dashboard-stat-value">178<span class="fs-6"> days</span></h3>
+                            <span class="small text-muted">Joined Mar 15, 2023</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dashboard-stat animate-fadeInUp" style="animation-delay: 0.3s;">
+                        <div class="dashboard-stat-icon" style="background: rgba(76, 201, 240, 0.1);">
+                            <i class="fas fa-sign-in-alt text-info"></i>
+                        </div>
+                        <div class="dashboard-stat-content">
+                            <p class="dashboard-stat-label">Last Login</p>
+                            <h3 class="dashboard-stat-value">Today</h3>
+                            <span class="small text-muted">10:30 AM from Chrome</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <section class="main-dashboard-content">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                    <!-- Account Status Card -->
+                    <div class="dashboard-card mb-4 animate-fadeInUp" style="animation-delay: 0.4s;">
+                        <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="dashboard-card-title">
+                                <i class="fas fa-user-shield me-2 text-primary"></i>Account Status
+                            </h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" type="button" id="statusActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="statusActionsDropdown">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-sync-alt me-2"></i>Refresh Status</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">Profile Completion</h6>
+                                            <span class="badge bg-primary">75%</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="mt-2 small">
+                                            <a href="{{ url_for('profile') }}" class="text-primary">Complete your profile</a> to unlock more features
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-3">Security Status</h6>
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator success"></div>
+                                                <span>Email verified</span>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator danger"></div>
+                                                <span>Two-factor authentication disabled</span>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator warning"></div>
+                                                <span>Password last changed 30+ days ago</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-3">Recommended Actions</h6>
+                                    <div class="recommended-actions">
+                                        <a href="{{ url_for('settings') }}#security-section" class="action-item">
+                                            <div class="action-icon warning">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </div>
+                                            <div class="action-content">
+                                                <h6 class="mb-1">Enable 2FA</h6>
+                                                <p class="mb-0 small text-muted">Protect your account with two-factor authentication</p>
+                                            </div>
+                                        </a>
+                                        <a href="{{ url_for('settings') }}#password-section" class="action-item">
+                                            <div class="action-icon warning">
+                                                <i class="fas fa-key"></i>
+                                            </div>
+                                            <div class="action-content">
+                                                <h6 class="mb-1">Update Password</h6>
+                                                <p class="mb-0 small text-muted">Change your password regularly for better security</p>
+                                            </div>
+                                        </a>
+                                        <a href="{{ url_for('profile') }}" class="action-item">
+                                            <div class="action-icon info">
+                                                <i class="fas fa-user-edit"></i>
+                                            </div>
+                                            <div class="action-content">
+                                                <h6 class="mb-1">Complete Profile</h6>
+                                                <p class="mb-0 small text-muted">Add additional information to your profile</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Card -->
+                    <div class="dashboard-card animate-fadeInUp" style="animation-delay: 0.5s;">
+                        <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="dashboard-card-title">
+                                <i class="fas fa-history me-2 text-primary"></i>Recent Activity
+                            </h5>
+                            <a href="#" class="btn btn-sm btn-light">View All</a>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="activity-timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker primary"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0">Successful login</h6>
+                                            <span class="badge bg-light text-dark">Just now</span>
+                                        </div>
+                                        <p class="mb-0 small text-muted">Chrome on Windows • New York, USA</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-marker success"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0">Profile updated</h6>
+                                            <span class="badge bg-light text-dark">2 days ago</span>
+                                        </div>
+                                        <p class="mb-0 small text-muted">You updated your profile information</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-marker warning"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0">Password changed</h6>
+                                            <span class="badge bg-light text-dark">5 days ago</span>
+                                        </div>
+                                        <p class="mb-0 small text-muted">Your account password was successfully updated</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-marker info"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0">Email verified</h6>
+                                            <span class="badge bg-light text-dark">1 week ago</span>
+                                        </div>
+                                        <p class="mb-0 small text-muted">Your email address has been successfully verified</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-4">
+                    <!-- Quick Actions Card -->
+                    <div class="dashboard-card mb-4 animate-fadeInUp" style="animation-delay: 0.6s;">
+                        <div class="dashboard-card-header">
+                            <h5 class="dashboard-card-title">
+                                <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                            </h5>
+                        </div>
+                        <div class="dashboard-card-body p-0">
+                            <div class="quick-actions">
+                                <a href="{{ url_for('profile') }}" class="quick-action-item">
+                                    <div class="quick-action-icon" style="background: rgba(67, 97, 238, 0.1);">
+                                        <i class="fas fa-user-edit text-primary"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <span>Update Profile</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a href="{{ url_for('settings') }}#notifications-section" class="quick-action-item">
+                                    <div class="quick-action-icon" style="background: rgba(255, 159, 28, 0.1);">
+                                        <i class="fas fa-bell text-warning"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <span>Notifications</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a href="{{ url_for('settings') }}#security-section" class="quick-action-item">
+                                    <div class="quick-action-icon" style="background: rgba(230, 57, 70, 0.1);">
+                                        <i class="fas fa-shield-alt text-danger"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <span>Security Settings</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a href="{{ url_for('settings') }}#privacy-section" class="quick-action-item">
+                                    <div class="quick-action-icon" style="background: rgba(42, 157, 143, 0.1);">
+                                        <i class="fas fa-user-shield text-success"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <span>Privacy Settings</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a href="{{ url_for('settings') }}#appearance-section" class="quick-action-item">
+                                    <div class="quick-action-icon" style="background: rgba(76, 201, 240, 0.1);">
+                                        <i class="fas fa-palette text-info"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <span>Appearance</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resources Card -->
+                    <div class="dashboard-card animate-fadeInUp" style="animation-delay: 0.7s;">
+                        <div class="dashboard-card-header">
+                            <h5 class="dashboard-card-title">
+                                <i class="fas fa-lightbulb me-2 text-warning"></i>Resources
+                            </h5>
+                        </div>
+                        <div class="dashboard-card-body p-0">
+                            <div class="resource-list">
+                                <a href="#" class="resource-item">
+                                    <div class="resource-icon" style="background: rgba(67, 97, 238, 0.1);">
+                                        <i class="fas fa-shield-alt text-primary"></i>
+                                    </div>
+                                    <div class="resource-content">
+                                        <h6 class="mb-1">Security Guide</h6>
+                                        <p class="mb-0 small text-muted">Best practices for account security</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="resource-item">
+                                    <div class="resource-icon" style="background: rgba(42, 157, 143, 0.1);">
+                                        <i class="fas fa-book text-success"></i>
+                                    </div>
+                                    <div class="resource-content">
+                                        <h6 class="mb-1">Getting Started</h6>
+                                        <p class="mb-0 small text-muted">New user guide and tutorials</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="resource-item">
+                                    <div class="resource-icon" style="background: rgba(76, 201, 240, 0.1);">
+                                        <i class="fas fa-question-circle text-info"></i>
+                                    </div>
+                                    <div class="resource-content">
+                                        <h6 class="mb-1">FAQs</h6>
+                                        <p class="mb-0 small text-muted">Answers to common questions</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="resource-item">
+                                    <div class="resource-icon" style="background: rgba(255, 159, 28, 0.1);">
+                                        <i class="fas fa-headset text-warning"></i>
+                                    </div>
+                                    <div class="resource-content">
+                                        <h6 class="mb-1">Support Center</h6>
+                                        <p class="mb-0 small text-muted">Get help with any issues</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
 <style>
-    .progress {
-        background-color: rgba(0, 0, 0, 0.05);
-        border-radius: 10px;
-        overflow: hidden;
+    /* Additional dashboard styles */
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 10px;
     }
     
-    .icon-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+    .status-indicator.success {
+        background-color: var(--success);
+    }
+    
+    .status-indicator.warning {
+        background-color: var(--warning);
+    }
+    
+    .status-indicator.danger {
+        background-color: var(--danger);
+    }
+    
+    .status-indicator.info {
+        background-color: var(--info);
+    }
+    
+    .recommended-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .action-item {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: var(--border-radius-md);
+        padding: 12px;
+        transition: var(--transition-normal);
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--gray-light);
+    }
+    
+    .action-item:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary);
+    }
+    
+    .action-icon {
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 50%;
+        margin-right: 12px;
+        font-size: 1rem;
+        flex-shrink: 0;
     }
     
-    .card-header {
-        background-color: transparent;
+    .action-icon.primary {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
     }
     
-    .text-muted {
-        color: #6c757d !important;
+    .action-icon.warning {
+        background: rgba(255, 159, 28, 0.1);
+        color: var(--warning);
     }
     
-    .list-group-item-action:hover {
-        background-color: rgba(0, 0, 0, 0.01);
+    .action-icon.danger {
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--danger);
     }
     
-    .list-group-item-action:active {
-        background-color: rgba(0, 0, 0, 0.03);
+    .action-icon.info {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--info);
     }
     
-    .btn-outline-primary {
-        border-color: #dee2e6;
-        color: var(--bs-primary);
+    .action-icon.success {
+        background: rgba(42, 157, 143, 0.1);
+        color: var(--success);
     }
     
-    .btn-outline-primary:hover {
-        background-color: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: white;
+    .action-content {
+        flex: 1;
     }
     
-    .btn-outline-danger {
-        border-color: #dee2e6;
-        color: var(--bs-danger);
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
     }
     
-    .btn-outline-danger:hover {
-        background-color: var(--bs-danger);
-        border-color: var(--bs-danger);
-        color: white;
+    .quick-action-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid var(--gray-light);
+        transition: var(--transition-normal);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .quick-action-item:last-child {
+        border-bottom: none;
+    }
+    
+    .quick-action-item:hover {
+        background-color: rgba(67, 97, 238, 0.03);
+    }
+    
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 14px;
+        font-size: 1.1rem;
+    }
+    
+    .quick-action-content {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    .resource-list {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .resource-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid var(--gray-light);
+        transition: var(--transition-normal);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .resource-item:last-child {
+        border-bottom: none;
+    }
+    
+    .resource-item:hover {
+        background-color: rgba(67, 97, 238, 0.03);
+    }
+    
+    .resource-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin-right: 14px;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .resource-content {
+        flex: 1;
+    }
+    
+    .activity-timeline {
+        position: relative;
+        padding-left: 20px;
+    }
+    
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: var(--gray-light);
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -20px;
+        top: 4px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        z-index: 1;
+    }
+    
+    .timeline-marker.primary {
+        background-color: var(--primary);
+    }
+    
+    .timeline-marker.success {
+        background-color: var(--success);
+    }
+    
+    .timeline-marker.warning {
+        background-color: var(--warning);
+    }
+    
+    .timeline-marker.info {
+        background-color: var(--info);
+    }
+    
+    .timeline-marker.danger {
+        background-color: var(--danger);
+    }
+    
+    .timeline-content {
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .timeline-item:last-child .timeline-content {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .dark-mode .action-item {
+        background: #2d2d2d;
+        border-color: #444;
+    }
+    
+    .dark-mode .quick-action-item,
+    .dark-mode .resource-item {
+        border-color: #444;
+    }
+    
+    .dark-mode .quick-action-item:hover,
+    .dark-mode .resource-item:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .dark-mode .activity-timeline::before {
+        background-color: #444;
+    }
+    
+    .dark-mode .timeline-content {
+        border-color: #444;
     }
 </style>
 {% endblock %}

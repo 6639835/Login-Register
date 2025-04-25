@@ -68,7 +68,7 @@ def encrypt_data(data):
     """Encrypt string data using Fernet symmetric encryption"""
     if data is None:
         return None
-    
+        
     # Use cached Fernet instance
     f = get_fernet()
     # Convert string to bytes
@@ -82,7 +82,7 @@ def decrypt_data(encrypted_data):
     """Decrypt previously encrypted data"""
     if encrypted_data is None:
         return None
-    
+        
     # Use cached Fernet instance
     f = get_fernet()
     # Convert from base64 string to bytes

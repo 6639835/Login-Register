@@ -10,7 +10,7 @@ from flask_caching import Cache
 from flask_assets import Environment, Bundle
 from flask_mail import Mail, Message
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 import secrets
 
@@ -30,7 +30,7 @@ mail = Mail(app)
 
 # Define Forms
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    username_or_email = StringField('Username or Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
@@ -60,6 +60,13 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
+
+class ContactForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=2, max=50)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    subject = StringField('Subject', validators=[DataRequired(), Length(min=2, max=100)])
+    message = TextAreaField('Message', validators=[DataRequired(), Length(min=10, max=1000)])
+    submit = SubmitField('Send Message')
 
 # Configure caching
 app.config['CACHE_TYPE'] = 'SimpleCache'
@@ -151,8 +158,10 @@ If you did not make this request, simply ignore this email and no changes will b
 
 # Routes
 @app.route('/')
-@cache.cached(timeout=60)  # Cache this view for 60 seconds
 def home():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    # Continue with existing code for non-logged in users
     return render_template('index.html')
 
 @app.route('/features')
@@ -167,7 +176,16 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.find_by_email(form.email.data)
+        # Check if input is an email or username
+        input_identifier = form.username_or_email.data
+        user = None
+        
+        # Try to find user by email first
+        if '@' in input_identifier:
+            user = User.find_by_email(input_identifier)
+        else:
+            # If not an email, try to find by username
+            user = User.query.filter_by(username=input_identifier).first()
         
         if user and check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
@@ -175,7 +193,7 @@ def login():
             flash('Logged in successfully!', 'success')
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         else:
-            flash('Login failed. Please check your email and password.', 'danger')
+            flash('Login failed. Please check your username/email and password.', 'danger')
     
     return render_template('login.html', form=form)
 
@@ -260,14 +278,16 @@ def about():
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        message = request.form.get('message')
+    form = ContactForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        subject = form.subject.data
+        message = form.message.data
         # Process contact form (in a real app, you would send an email, store in DB, etc.)
         flash('Your message has been received. We will get back to you soon!', 'success')
         return redirect(url_for('contact'))
-    return render_template('contact.html')
+    return render_template('contact.html', form=form)
 
 @app.route('/faq')
 def faq():

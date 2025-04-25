@@ -42,25 +42,79 @@
 
     <!-- Dark Mode Toggle -->
     <div class="position-fixed end-0 top-50 translate-middle-y pe-3" style="z-index: 1030;">
-        <div class="form-check form-switch p-2 bg-white rounded-start shadow-sm">
-            <input class="form-check-input" type="checkbox" id="darkModeToggle">
-            <label class="form-check-label" for="darkModeToggle">
-                <i class="fas fa-moon"></i>
-            </label>
-        </div>
+        <button class="theme-toggle-btn shadow-sm" id="darkModeToggle" aria-label="Toggle dark mode">
+            <i class="fas fa-sun light-icon"></i>
+            <i class="fas fa-moon dark-icon"></i>
+        </button>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+    <!-- Back to top button -->
+    <button id="backToTop" class="back-to-top shadow-sm" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
-                <i class="fas fa-lock me-2"></i>
-                <span>Auth System</span>
+                <i class="fas fa-lock me-2 text-primary"></i>
+                <span class="fw-bold">Auth System</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                    <!-- Navigation for logged-in users -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path == url_for('dashboard') else '' }}" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path == url_for('profile') else '' }}" href="{{ url_for('profile') }}">
+                            <i class="fas fa-user me-1"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path == url_for('settings') else '' }}" href="{{ url_for('settings') }}">
+                            <i class="fas fa-cog me-1"></i> Settings
+                        </a>
+                    </li>
+                    <!-- User dropdown menu -->
+                    <li class="nav-item dropdown ms-2">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="avatar-xs me-2">
+                                <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=4361ee&color=fff" alt="{{ current_user.username }}" class="rounded-circle">
+                            </div>
+                            <span>{{ current_user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('profile') }}">
+                                    <i class="fas fa-id-card me-2"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('settings') }}">
+                                    <i class="fas fa-cog me-2"></i> Settings
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <!-- Navigation for non-logged-in users -->
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.path == url_for('home') else '' }}" href="{{ url_for('home') }}">
                             <i class="fas fa-home me-1"></i> Home
@@ -86,40 +140,14 @@
                             <i class="fas fa-question-circle me-1"></i> FAQ
                         </a>
                     </li>
-                    
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i>
-                            {{ current_user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('profile') }}">
-                                    <i class="fas fa-id-card me-2"></i> Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('settings') }}">
-                                    <i class="fas fa-cog me-2"></i> Settings
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-light btn-sm px-3 py-1 ms-2 {{ 'active' if request.path == url_for('login') else '' }}" href="{{ url_for('login') }}">
+                    <!-- Login/Register buttons -->
+                    <li class="nav-item ms-2">
+                        <a class="nav-link btn btn-outline-primary btn-sm px-3 py-2 {{ 'active' if request.path == url_for('login') else '' }}" href="{{ url_for('login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i> Login
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-light text-primary btn-sm px-3 py-1 ms-2 {{ 'active' if request.path == url_for('register') else '' }}" href="{{ url_for('register') }}">
+                    <li class="nav-item ms-2">
+                        <a class="nav-link btn btn-primary text-white btn-sm px-3 py-2 {{ 'active' if request.path == url_for('register') else '' }}" href="{{ url_for('register') }}">
                             <i class="fas fa-user-plus me-1"></i> Register
                         </a>
                     </li>
@@ -129,12 +157,15 @@
         </div>
     </nav>
 
+    <!-- Toast notifications container -->
+    <div class="toast-container"></div>
+
     <!-- Flash Messages -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" data-aos="fade-down" data-aos-delay="100">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show animate-fadeInUp" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -149,108 +180,393 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-5 mt-5">
+    <footer class="footer mt-auto py-5">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4 mb-md-0">
-                    <h5 class="mb-3">Auth System</h5>
-                    <p class="text-muted mb-3">A secure, modern, and efficient authentication system built with Flask.</p>
-                    <div class="d-flex">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-github"></i></a>
+            <!-- Footer Top Section -->
+            <div class="row g-4 mb-4">
+                <!-- Brand Column -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand mb-4">
+                        <a class="d-flex align-items-center text-decoration-none mb-3" href="{{ url_for('home') }}">
+                            <i class="fas fa-lock fs-3 me-2 text-primary"></i>
+                            <h5 class="mb-0 fw-bold text-white">Auth System</h5>
+                        </a>
+                        <p class="text-muted mb-3">A secure, modern authentication system with advanced features for web applications.</p>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="col-md-2 mb-4 mb-md-0">
-                    <h5 class="mb-3">Links</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ url_for('home') }}" class="text-muted">Home</a></li>
-                        <li class="mb-2"><a href="{{ url_for('features') }}" class="text-muted">Features</a></li>
-                        <li class="mb-2"><a href="{{ url_for('about') }}" class="text-muted">About</a></li>
-                        <li class="mb-2"><a href="{{ url_for('contact') }}" class="text-muted">Contact</a></li>
-                        <li><a href="{{ url_for('faq') }}" class="text-muted">FAQ</a></li>
+                
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white mb-4">Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('home') }}">Home</a></li>
+                        <li><a href="{{ url_for('features') }}">Features</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
                     </ul>
                 </div>
-                <div class="col-md-2 mb-4 mb-md-0">
-                    <h5 class="mb-3">Legal</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-muted">Privacy Policy</a></li>
-                        <li class="mb-2"><a href="#" class="text-muted">Terms of Service</a></li>
-                        <li><a href="#" class="text-muted">Cookies Policy</a></li>
+                
+                <!-- Legal Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white mb-4">Legal</h6>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">GDPR Compliance</a></li>
+                        <li><a href="#">Security</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h5 class="mb-3">Newsletter</h5>
-                    <p class="text-muted mb-3">Subscribe to our newsletter to receive updates and news.</p>
-                    <form class="d-flex">
-                        <input type="email" class="form-control me-2" placeholder="Your email">
-                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                
+                <!-- Newsletter -->
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-white mb-4">Stay Updated</h6>
+                    <p class="text-muted mb-3">Subscribe to our newsletter to receive updates about new features and security tips.</p>
+                    <form class="newsletter-form">
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control" placeholder="Your email address" aria-label="Your email address">
+                            <button class="btn btn-primary" type="button">Subscribe</button>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="agreementCheck" required>
+                            <label class="form-check-label small text-muted" for="agreementCheck">
+                                I agree to receive marketing emails and can unsubscribe at any time
+                            </label>
+                        </div>
                     </form>
                 </div>
             </div>
-            <hr class="my-4">
+            
+            <hr class="footer-divider">
+            
+            <!-- Footer Bottom Section -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <p class="mb-2 mb-md-0">&copy; {{ now.year }} Auth System. All rights reserved.</p>
-                <div>
+                <div class="footer-copyright text-center text-md-start mb-3 mb-md-0">
+                    <span class="text-muted">&copy; {{ now.year }} Auth System. All rights reserved.</span>
+                </div>
+                <div class="footer-bottom-links text-center text-md-end">
                     <a href="#" class="text-muted me-3">Privacy</a>
                     <a href="#" class="text-muted me-3">Terms</a>
-                    <a href="#" class="text-muted">Cookie Policy</a>
+                    <a href="#" class="text-muted">Cookies</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Back to top button -->
-    <button id="back-to-top" class="btn btn-primary rounded-circle">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
-            crossorigin="anonymous"></script>
-    
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
     <!-- AOS Animation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js" 
             integrity="sha512-A7AYk1fGKX6S2SsHywmPkrnzTZHrgiVT7GcQkLGDe2ev0aWb8zejytzS8wjo7PGEXKqJOrjQ4oORtnimIRZBtw==" 
-            crossorigin="anonymous" 
+            crossorigin="anonymous"
             referrerpolicy="no-referrer"></script>
     
-    <!-- Initialize AOS -->
+    <!-- Custom JS -->
     <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-
-        // Preloader
-        window.addEventListener('load', function() {
-            document.getElementById('preloader').style.display = 'none';
-        });
-
-        // Back to top button
-        const backToTopButton = document.getElementById('back-to-top');
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                backToTopButton.classList.add('show');
-            } else {
-                backToTopButton.classList.remove('show');
-            }
-        });
-
-        backToTopButton.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS Animation
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100
             });
+            
+            // Preloader
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                setTimeout(() => {
+                    preloader.classList.add('loaded');
+                    document.body.classList.add('loaded');
+                }, 500);
+            }
+            
+            // Navbar Scrolled
+            const navbar = document.querySelector('.navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            // Back to top button
+            const backToTopButton = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
+                }
+            });
+            
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Dark Mode Toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or prefer-color-scheme
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && prefersDarkMode)) {
+                htmlElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Update button state based on current theme
+            updateDarkModeButton();
+            
+            // Toggle dark mode on button click
+            darkModeToggle.addEventListener('click', () => {
+                htmlElement.classList.toggle('dark-mode');
+                document.body.classList.toggle('dark-mode');
+                
+                // Save preference to localStorage
+                const isDarkMode = htmlElement.classList.contains('dark-mode');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+                
+                // Update button appearance
+                updateDarkModeButton();
+            });
+            
+            function updateDarkModeButton() {
+                const isDarkMode = htmlElement.classList.contains('dark-mode');
+                if (isDarkMode) {
+                    darkModeToggle.classList.add('dark-active');
+                } else {
+                    darkModeToggle.classList.remove('dark-active');
+                }
+            }
+            
+            // Show toast notification function (can be used throughout the site)
+            window.showToast = function(message, type = 'info') {
+                const toastContainer = document.querySelector('.toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <div class="toast-content">
+                        <i class="fas ${getIconForToastType(type)} me-2"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button class="toast-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 5000);
+                
+                // Close button
+                const closeButton = toast.querySelector('.toast-close');
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => {
+                        toast.remove();
+                    });
+                }
+            }
+            
+            function getIconForToastType(type) {
+                switch(type) {
+                    case 'success': return 'fa-check-circle';
+                    case 'error': return 'fa-exclamation-circle';
+                    case 'warning': return 'fa-exclamation-triangle';
+                    case 'info':
+                    default: return 'fa-info-circle';
+                }
+            }
+            
+            // Initialize tooltips
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            
+            // Initialize popovers
+            const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+            [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
         });
     </script>
-    
-    <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
+
+    <!-- Page specific scripts -->
     {% block scripts %}{% endblock %}
+
+    <style>
+        /* Additional Base Styles */
+        .avatar-xs {
+            width: 30px;
+            height: 30px;
+            overflow: hidden;
+        }
+        
+        .avatar-xs img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .theme-toggle-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: white;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dark-mode .theme-toggle-btn {
+            background-color: #2d2d2d;
+            color: white;
+        }
+        
+        .theme-toggle-btn .light-icon {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .theme-toggle-btn .dark-icon {
+            position: absolute;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .theme-toggle-btn.dark-active .light-icon {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        
+        .theme-toggle-btn.dark-active .dark-icon {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .navbar.scrolled {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1050;
+        }
+        
+        .toast {
+            background-color: white;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            min-width: 300px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .toast.success {
+            border-left-color: var(--success);
+        }
+        
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+        
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .toast-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .dark-mode .toast {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.loaded {
+            overflow: auto;
+        }
+    </style>
 </body>
 </html> 

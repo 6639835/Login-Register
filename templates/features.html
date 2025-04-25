@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Features - Login-Register System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto text-center" data-aos="fade-down">
+            <h1 class="display-4 fw-bold mb-4">Powerful Authentication Features</h1>
+            <p class="lead text-muted mb-4">Discover all the capabilities that make our authentication system secure, flexible, and user-friendly.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('register') }}" class="btn btn-primary px-4 py-2">Get Started</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-outline-primary px-4 py-2">Contact Support</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Features Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4" data-aos="fade-up">
+            <h2 class="h2 fw-bold">Key Features</h2>
+            <p class="text-muted">Everything you need for secure user authentication</p>
+        </div>
+        
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-hover">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-flex mb-3">
+                        <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 card-title">Secure Authentication</h3>
+                    <p class="card-text text-muted">Industry-standard security practices with password hashing using PBKDF2-SHA256 and salting.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-hover">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-flex mb-3">
+                        <i class="fas fa-lock fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 card-title">Data Encryption</h3>
+                    <p class="card-text text-muted">Sensitive user data is fully encrypted in the database, protecting your information from unauthorized access.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card h-100 shadow-hover">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-flex mb-3">
+                        <i class="fab fa-facebook-f fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 card-title">Social Login</h3>
+                    <p class="card-text text-muted">Seamless authentication using your existing social accounts like Google, Facebook, and Twitter.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Advanced Features Section -->
+    <div class="row mb-5">
+        <div class="col-lg-6 mb-4" data-aos="fade-right" data-aos-delay="100">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="h4 mb-3">Advanced Security</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-key text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Two-Factor Authentication</h4>
+                                    <p class="text-muted mb-0">Add an extra layer of security with SMS or authenticator app verification.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-fingerprint text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Biometric Support</h4>
+                                    <p class="text-muted mb-0">Use fingerprint or face recognition on compatible devices for quick and secure access.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-history text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Session Management</h4>
+                                    <p class="text-muted mb-0">View and manage active sessions with the ability to logout from other devices.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-bell text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Security Alerts</h4>
+                                    <p class="text-muted mb-0">Receive instant notifications for suspicious activities or login attempts.</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4" data-aos="fade-left" data-aos-delay="200">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="h4 mb-3">User Management</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-user-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Custom Profiles</h4>
+                                    <p class="text-muted mb-0">Create detailed user profiles with avatar uploads and customizable information.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Email Verification</h4>
+                                    <p class="text-muted mb-0">Ensure email authenticity with verification links and prevent account abuse.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-cog text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Account Settings</h4>
+                                    <p class="text-muted mb-0">Comprehensive settings to personalize your experience and security preferences.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-sync-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">Password Recovery</h4>
+                                    <p class="text-muted mb-0">Simple and secure process to reset forgotten passwords without hassle.</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Developer Features Section -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-12 text-center mb-4">
+            <h2 class="h2 fw-bold">Developer-Friendly</h2>
+            <p class="text-muted">Built with developers in mind</p>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-hover text-center">
+                <div class="card-body p-4">
+                    <i class="fas fa-code fa-2x text-primary mb-3"></i>
+                    <h3 class="h5">Clean API</h3>
+                    <p class="text-muted">Well-documented API endpoints for seamless integration.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-hover text-center">
+                <div class="card-body p-4">
+                    <i class="fas fa-plug fa-2x text-primary mb-3"></i>
+                    <h3 class="h5">Easy Integration</h3>
+                    <p class="text-muted">Integrate with existing systems using simple configurations.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-hover text-center">
+                <div class="card-body p-4">
+                    <i class="fas fa-tachometer-alt fa-2x text-primary mb-3"></i>
+                    <h3 class="h5">Performance</h3>
+                    <p class="text-muted">Optimized for speed with caching and efficient queries.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-hover text-center">
+                <div class="card-body p-4">
+                    <i class="fas fa-cogs fa-2x text-primary mb-3"></i>
+                    <h3 class="h5">Customizable</h3>
+                    <p class="text-muted">Easily extend functionality to suit your specific needs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison Section -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-4">
+                    <h3 class="h4 mb-0 text-center">How We Compare</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Features</th>
+                                    <th class="text-center">Basic Solutions</th>
+                                    <th class="text-center">Competitors</th>
+                                    <th class="text-center bg-light">Our Platform</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Two-Factor Authentication</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Data Encryption</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Social Login Options</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Session Management</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Biometric Support</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Security Alerts</td>
+                                    <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center bg-light"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action -->
+    <div class="row" data-aos="fade-up" data-aos-delay="300">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg bg-primary text-white p-4">
+                <div class="card-body p-4 text-center">
+                    <h2 class="h3 mb-4">Ready to Experience Secure Authentication?</h2>
+                    <p class="lead mb-4">Join thousands of users who trust our platform for their authentication needs.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('register') }}" class="btn btn-light px-4 py-2">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light px-4 py-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

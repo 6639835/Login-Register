@@ -1,88 +1,326 @@
 {% extends 'base.html' %}
 
-{% block title %}Profile - Login-Register System{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row">
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <div class="user-avatar mx-auto mb-4">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <h5 class="my-3">{{ current_user.username }}</h5>
-                    <p class="text-muted mb-4">{{ current_user.email }}</p>
-                    <div class="d-flex justify-content-center mb-2">
-                        <button type="button" class="btn btn-primary">Edit Profile</button>
-                        <button type="button" class="btn btn-outline-primary ms-2">Change Password</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <p class="mb-0">Registered</p>
+        <!-- Profile Header -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 rounded-3 shadow-sm" data-aos="fade-up">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-2 col-md-3 text-center text-md-start mb-4 mb-md-0">
+                            <div class="profile-image-wrapper mx-auto mx-md-0">
+                                <i class="fas fa-user-circle fa-6x text-primary"></i>
+                            </div>
                         </div>
-                        <div class="col-sm-9">
-                            <p class="text-muted mb-0">{{ current_user.registered_on.strftime('%B %d, %Y') }}</p>
+                        <div class="col-lg-8 col-md-6 text-center text-md-start">
+                            <h2 class="mb-1">{{ current_user.username }}</h2>
+                            <p class="text-muted mb-2">{{ current_user.email }}</p>
+                            <div class="mb-3">
+                                <span class="badge bg-success me-2"><i class="fas fa-check-circle me-1"></i> Email Verified</span>
+                                <span class="badge bg-primary"><i class="fas fa-user me-1"></i> Active Member</span>
+                            </div>
+                            <p class="bio mb-0">
+                                Welcome to my profile! I'm a new user exploring this amazing platform.
+                            </p>
                         </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <p class="mb-0">Status</p>
-                        </div>
-                        <div class="col-sm-9">
-                            <p class="text-muted mb-0"><span class="badge bg-success">Active</span></p>
+                        <div class="col-lg-2 col-md-3 text-center text-md-end mt-3 mt-md-0">
+                            <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Profile Content -->
         <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Personal Information</h5>
+            <!-- About Me Section -->
+            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                    <i class="fas fa-user-tag me-2 text-primary"></i>
+                    <h5 class="mb-0">About Me</h5>
                 </div>
                 <div class="card-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" value="{{ current_user.username }}" readonly>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Full Name</label>
+                                <p class="mb-0 fw-medium">John Doe</p>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" value="{{ current_user.email }}">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Username</label>
+                                <p class="mb-0 fw-medium">{{ current_user.username }}</p>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullName" placeholder="Enter your full name">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Email Address</label>
+                                <p class="mb-0 fw-medium">{{ current_user.email }}</p>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="bio" class="form-label">Bio</label>
-                            <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself"></textarea>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Member Since</label>
+                                <p class="mb-0 fw-medium">{{ current_user.registered_on.strftime('%B %d, %Y') }}</p>
+                            </div>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Bio</label>
+                        <p class="text-muted">
+                            Welcome to my profile! I'm a new user exploring this amazing platform. I'm interested in technology, design, and innovation. Looking forward to connecting with like-minded individuals and exploring all the features this platform has to offer.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <label class="form-label small text-muted">Interests</label>
+                        <div>
+                            <span class="badge bg-light text-dark me-2 mb-2">Technology</span>
+                            <span class="badge bg-light text-dark me-2 mb-2">Design</span>
+                            <span class="badge bg-light text-dark me-2 mb-2">Innovation</span>
+                            <span class="badge bg-light text-dark me-2 mb-2">Web Development</span>
+                            <span class="badge bg-light text-dark me-2 mb-2">UI/UX</span>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security</h5>
+            
+            <!-- Profile Stats -->
+            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                    <i class="fas fa-chart-line me-2 text-primary"></i>
+                    <h5 class="mb-0">Activity Summary</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-4 border-end border-bottom p-4 text-center">
+                            <h3 class="mb-1">12</h3>
+                            <p class="text-muted mb-0">Logins</p>
+                        </div>
+                        <div class="col-md-4 border-end border-bottom p-4 text-center">
+                            <h3 class="mb-1">5</h3>
+                            <p class="text-muted mb-0">Updates</p>
+                        </div>
+                        <div class="col-md-4 border-bottom p-4 text-center">
+                            <h3 class="mb-1">30</h3>
+                            <p class="text-muted mb-0">Days Active</p>
+                        </div>
+                        <div class="col-md-4 border-end p-4 text-center">
+                            <h3 class="mb-1">85%</h3>
+                            <p class="text-muted mb-0">Profile Complete</p>
+                        </div>
+                        <div class="col-md-4 border-end p-4 text-center">
+                            <h3 class="mb-1">Medium</h3>
+                            <p class="text-muted mb-0">Security Level</p>
+                        </div>
+                        <div class="col-md-4 p-4 text-center">
+                            <h3 class="mb-1">Active</h3>
+                            <p class="text-muted mb-0">Account Status</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card border-0 rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-history me-2 text-primary"></i>
+                        <h5 class="mb-0">Recent Activity</h5>
+                    </div>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Logged in successfully</h6>
+                                    <p class="text-muted small mb-0">Today at 10:30 AM</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Updated profile information</h6>
+                                    <p class="text-muted small mb-0">Yesterday at 5:45 PM</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Changed password</h6>
+                                    <p class="text-muted small mb-0">3 days ago</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Verified email address</h6>
+                                    <p class="text-muted small mb-0">1 week ago</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Created account</h6>
+                                    <p class="text-muted small mb-0">1 month ago</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <!-- Quick Stats -->
+            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                    <h5 class="mb-0">Account Health</h5>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Manage your account security settings and update your password.</p>
+                    <!-- Security Score -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Security Score</span>
+                            <span class="small text-muted">65%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Completion -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Profile Completion</span>
+                            <span class="small text-muted">75%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Age -->
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Account Age</span>
+                            <span class="small text-muted">30 days</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card border-0 rounded-3 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                    <i class="fas fa-bolt me-2 text-primary"></i>
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">Security Settings</a>
+                        <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Help -->
+            <div class="card border-0 rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                    <i class="fas fa-question-circle me-2 text-primary"></i>
+                    <h5 class="mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Have questions about your account or need assistance?</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('faq') }}" class="btn btn-sm btn-light d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-book me-2"></i>FAQs</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('contact') }}" class="btn btn-sm btn-light d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-envelope me-2"></i>Contact Support</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('about') }}" class="btn btn-sm btn-light d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-info-circle me-2"></i>About Us</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block head %}
+<style>
+    .profile-image-wrapper {
+        width: 100px;
+        height: 100px;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .fw-medium {
+        font-weight: 500;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bs-primary);
+    }
+</style>
 {% endblock %} 

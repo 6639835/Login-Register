@@ -67,6 +67,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path == url_for('features') else '' }}" href="{{ url_for('features') }}">
+                            <i class="fas fa-star me-1"></i> Features
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.path == url_for('about') else '' }}" href="{{ url_for('about') }}">
                             <i class="fas fa-info-circle me-1"></i> About
                         </a>
@@ -161,6 +166,7 @@
                     <h5 class="mb-3">Links</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="{{ url_for('home') }}" class="text-muted">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('features') }}" class="text-muted">Features</a></li>
                         <li class="mb-2"><a href="{{ url_for('about') }}" class="text-muted">About</a></li>
                         <li class="mb-2"><a href="{{ url_for('contact') }}" class="text-muted">Contact</a></li>
                         <li><a href="{{ url_for('faq') }}" class="text-muted">FAQ</a></li>

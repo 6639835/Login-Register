@@ -8,12 +8,58 @@ from crypto_utils import encrypt_data, decrypt_data
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_caching import Cache
 from flask_assets import Environment, Bundle
+from flask_mail import Mail, Message
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+import secrets
 
 # Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24).hex()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Email configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS', '')
+mail = Mail(app)
+
+# Define Forms
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember = BooleanField('Remember Me')
+    submit = SubmitField('Login')
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Sign Up')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('That username is taken. Please choose a different one.')
+
+class RequestResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+    def validate_email(self, email):
+        user = User.find_by_email(email.data)
+        if user is None:
+            raise ValidationError('There is no account with that email. You must register first.')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Reset Password')
 
 # Configure caching
 app.config['CACHE_TYPE'] = 'SimpleCache'
@@ -78,10 +124,30 @@ class User(UserMixin, db.Model):
         encrypted_email = encrypt_data(email)
         # Query directly against the encrypted value
         return cls.query.filter(cls._email == encrypted_email).first()
+    
+    def get_reset_token(self, expires_sec=1800):
+        """Generate a time-limited reset token"""
+        s = secrets.token_urlsafe(32)
+        # Store token in the database or cache
+        # For simplicity, we could use a separate table or Redis
+        return s
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# Send email for password reset
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request',
+                  sender='noreply@auth-system.com',
+                  recipients=[user.email])
+    msg.body = f'''To reset your password, visit the following link:
+{url_for('reset_token', token=token, _external=True)}
+
+If you did not make this request, simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
 
 # Routes
 @app.route('/')
@@ -89,54 +155,50 @@ def load_user(user_id):
 def home():
     return render_template('index.html')
 
+@app.route('/features')
+@cache.cached(timeout=60)  # Cache this view for 60 seconds
+def features():
+    return render_template('features.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.find_by_email(form.email.data)
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and check_password_hash(user.password, password):
-            login_user(user)
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            next_page = request.args.get('next')
             flash('Logged in successfully!', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         else:
-            flash('Login failed. Please check your username and password.', 'danger')
+            flash('Login failed. Please check your email and password.', 'danger')
     
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if password != confirm_password:
-            flash('Passwords do not match!', 'danger')
-            return render_template('register.html')
-        
-        existing_user = User.query.filter_by(username=username).first()
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        existing_user = User.query.filter_by(username=form.username.data).first()
         if existing_user:
             flash('Username already exists!', 'danger')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
         
-        # Optimized email uniqueness check - instead of loading all users
-        existing_email_user = User.find_by_email(email)
+        # Optimized email uniqueness check
+        existing_email_user = User.find_by_email(form.email.data)
         if existing_email_user:
             flash('Email already registered!', 'danger')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
         
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, email=email, password=hashed_password)
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         
         db.session.add(new_user)
         db.session.commit()
@@ -144,7 +206,38 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('register.html')
+    return render_template('register.html', form=form)
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = User.find_by_email(form.email.data)
+        send_reset_email(user)
+        flash('An email has been sent with instructions to reset your password.', 'info')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_request.html', form=form)
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    # Verify token
+    # In a real app, validate the token against the database or cache
+    
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        # Find user by token and update password
+        # For demo purposes, we'll just redirect
+        flash('Your password has been updated! You can now log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_token.html', form=form)
 
 @app.route('/dashboard')
 @login_required

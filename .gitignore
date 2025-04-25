@@ -39,3 +39,38 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Flask
+instance/
+.webassets-cache
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.flaskenv
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Encryption keys
+encryption_key.key
+*.key

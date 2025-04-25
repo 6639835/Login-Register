@@ -4,6 +4,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime
+from crypto_utils import encrypt_data, decrypt_data
+from sqlalchemy.ext.hybrid import hybrid_property
 
 # Create Flask app
 app = Flask(__name__)
@@ -28,9 +30,19 @@ def inject_now():
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    _email = db.Column('email', db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    @hybrid_property
+    def email(self):
+        """Decrypt email when accessing the property"""
+        return decrypt_data(self._email)
+    
+    @email.setter
+    def email(self, value):
+        """Encrypt email when setting the property"""
+        self._email = encrypt_data(value)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -81,10 +93,13 @@ def register():
             flash('Username already exists!', 'danger')
             return render_template('register.html')
         
-        existing_email = User.query.filter_by(email=email).first()
-        if existing_email:
-            flash('Email already registered!', 'danger')
-            return render_template('register.html')
+        # For email uniqueness check, we need to compare in the database
+        # because emails are stored encrypted
+        existing_email_users = User.query.all()
+        for user in existing_email_users:
+            if user.email == email:
+                flash('Email already registered!', 'danger')
+                return render_template('register.html')
         
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(username=username, email=email, password=hashed_password)

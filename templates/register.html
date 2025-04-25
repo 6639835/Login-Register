@@ -3,32 +3,328 @@
 {% block title %}Register - Login-Register System{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2 class="form-title">Create an Account</h2>
-    <form method="POST" action="{{ url_for('register') }}">
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-            <small class="form-text">Username must be unique.</small>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="form-container">
+                <div class="register-decoration"></div>
+                <div class="text-center mb-4">
+                    <div class="auth-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h2 class="fw-bold" style="color: var(--primary);">Create an Account</h2>
+                    <p class="text-muted">Join our community and enjoy the benefits of being a registered user.</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('register') }}" class="register-form">
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required>
+                        <label for="username"><i class="fas fa-user field-icon"></i> Username</label>
+                        <div class="form-text">Username must be unique.</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                        <label for="email"><i class="fas fa-envelope field-icon"></i> Email</label>
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3 password-field">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
+                        <label for="password"><i class="fas fa-lock field-icon"></i> Password</label>
+                        <span class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        <div class="form-text">Use a strong password with at least 8 characters.</div>
+                    </div>
+                    
+                    <div class="password-strength mt-2 mb-3 d-none">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Password strength:</span>
+                            <span class="strength-text">Weak</span>
+                        </div>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating mb-4 password-field">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+                        <label for="confirm_password"><i class="fas fa-check-circle field-icon"></i> Confirm Password</label>
+                        <span class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" class="text-decoration-none" style="color: var(--primary);">Terms of Service</a> and 
+                                <a href="#" class="text-decoration-none" style="color: var(--primary);">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3"><i class="fas fa-user-plus me-2"></i> Register</button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted">Already have an account? <a href="{{ url_for('login') }}" class="text-decoration-none" style="color: var(--primary); font-weight: 500;">Login here</a></p>
+                </div>
+                
+                <div class="login-or my-4">
+                    <hr class="hr-text" data-content="OR">
+                </div>
+                
+                <div class="social-login">
+                    <p class="text-center text-muted mb-3">Sign up with social accounts</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" class="btn btn-outline-secondary social-btn">
+                            <i class="fab fa-google"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary social-btn">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-            <small class="form-text">We'll never share your email with anyone else.</small>
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-            <small class="form-text">Use a strong password.</small>
-        </div>
-        <div class="form-group">
-            <label for="confirm_password">Confirm Password</label>
-            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-        </div>
-        <button type="submit" class="btn" style="width: 100%;">Register</button>
-    </form>
-    <div style="margin-top: 1rem; text-align: center;">
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
     </div>
 </div>
+
+{% block extra_css %}
+<style>
+    .form-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .register-decoration {
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary-light), rgba(76, 201, 240, 0.1));
+        border-radius: 50%;
+        z-index: 0;
+    }
+    
+    .register-form {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .form-floating > .form-control {
+        padding: 1rem 0.75rem;
+    }
+    
+    .form-floating > .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+    
+    .password-field {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        cursor: pointer;
+        color: var(--gray);
+        transition: color 0.3s;
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary);
+    }
+    
+    .password-strength {
+        font-size: 0.85rem;
+    }
+    
+    .strength-text {
+        font-weight: 600;
+    }
+    
+    .hr-text {
+        line-height: 1em;
+        position: relative;
+        outline: 0;
+        border: 0;
+        color: var(--gray);
+        text-align: center;
+        height: 1.5em;
+        opacity: 0.5;
+    }
+    
+    .hr-text:before {
+        content: '';
+        background: linear-gradient(to right, transparent, var(--gray), transparent);
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: 1px;
+    }
+    
+    .hr-text:after {
+        content: attr(data-content);
+        position: relative;
+        display: inline-block;
+        padding: 0 0.5em;
+        line-height: 1.5em;
+        color: var(--gray);
+        background-color: #fff;
+    }
+    
+    .social-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        padding: 0;
+    }
+    
+    .social-btn:hover {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const icon = document.querySelector(`#${fieldId}`).nextElementSibling.nextElementSibling.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('.form-control');
+        const progressBar = document.querySelector('.progress-bar');
+        const passwordField = document.getElementById('password');
+        const passwordStrength = document.querySelector('.password-strength');
+        const strengthText = document.querySelector('.strength-text');
+        
+        // Function to update form progress
+        function updateFormProgress() {
+            let filledFields = 0;
+            const requiredFields = document.querySelectorAll('input[required]');
+            
+            requiredFields.forEach(field => {
+                if (field.value.trim() !== '') {
+                    filledFields++;
+                }
+            });
+            
+            const progress = (filledFields / requiredFields.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+            
+            // Change color based on progress
+            if (progress < 50) {
+                progressBar.className = 'progress-bar bg-danger';
+            } else if (progress < 100) {
+                progressBar.className = 'progress-bar bg-warning';
+            } else {
+                progressBar.className = 'progress-bar bg-success';
+            }
+        }
+        
+        // Check password strength
+        function checkPasswordStrength(password) {
+            passwordStrength.classList.remove('d-none');
+            
+            // Basic strength check
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength += 25;
+            
+            // Contains lowercase
+            if (/[a-z]/.test(password)) strength += 25;
+            
+            // Contains uppercase
+            if (/[A-Z]/.test(password)) strength += 25;
+            
+            // Contains number or special char
+            if (/[0-9!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 25;
+            
+            // Update UI
+            const progressBarStrength = passwordStrength.querySelector('.progress-bar');
+            progressBarStrength.style.width = `${strength}%`;
+            progressBarStrength.setAttribute('aria-valuenow', strength);
+            
+            if (strength <= 25) {
+                progressBarStrength.className = 'progress-bar bg-danger';
+                strengthText.textContent = 'Weak';
+                strengthText.style.color = '#e63946';
+            } else if (strength <= 50) {
+                progressBarStrength.className = 'progress-bar bg-warning';
+                strengthText.textContent = 'Fair';
+                strengthText.style.color = '#fd7e14';
+            } else if (strength <= 75) {
+                progressBarStrength.className = 'progress-bar bg-info';
+                strengthText.textContent = 'Good';
+                strengthText.style.color = '#0dcaf0';
+            } else {
+                progressBarStrength.className = 'progress-bar bg-success';
+                strengthText.textContent = 'Strong';
+                strengthText.style.color = '#2a9d8f';
+            }
+        }
+        
+        // Add input event listeners
+        inputs.forEach(input => {
+            input.addEventListener('input', updateFormProgress);
+            
+            // Special handling for password field
+            if (input.id === 'password') {
+                input.addEventListener('input', function() {
+                    if (this.value.trim() !== '') {
+                        checkPasswordStrength(this.value);
+                    } else {
+                        passwordStrength.classList.add('d-none');
+                    }
+                });
+            }
+        });
+        
+        // Initialize form progress
+        updateFormProgress();
+    });
+</script>
+{% endblock %}
 {% endblock %} 

@@ -3,38 +3,170 @@
 {% block title %}Dashboard - Login-Register System{% endblock %}
 
 {% block content %}
-<div class="dashboard">
-    <div class="dashboard-header">
-        <h2>Welcome, {{ current_user.username }}!</h2>
-        <p>You are logged in with the email: {{ current_user.email }}</p>
-        <p>Account created on: {{ current_user.registered_on.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+<div class="container py-4">
+    <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-2 text-center">
+                <div class="user-avatar mx-auto">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 style="color: var(--primary);">Welcome, {{ current_user.username }}!</h2>
+                <p class="mb-1">You are logged in with the email: {{ current_user.email }}</p>
+                <p class="text-muted"><i class="fas fa-calendar-alt me-2"></i>Account created on: {{ current_user.registered_on.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
+            <div class="col-md-4">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Last Login</h6>
+                                <p class="mb-0 fw-bold">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Security Status</h6>
+                                <p class="mb-0 fw-bold">Protected</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="row">
-        <div class="dashboard-card">
-            <h3>Account Information</h3>
-            <p><strong>Username:</strong> {{ current_user.username }}</p>
-            <p><strong>Email:</strong> {{ current_user.email }}</p>
-            <p><strong>User ID:</strong> {{ current_user.id }}</p>
+    <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                <i class="fas fa-home me-2"></i>Overview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
+                <i class="fas fa-user me-2"></i>Profile
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">
+                <i class="fas fa-cog me-2"></i>Settings
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                <i class="fas fa-lock me-2"></i>Security
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dashboardTabsContent">
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="card-icon">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <h3 class="card-title">Account Information</h3>
+                            </div>
+                            <div class="mb-3">
+                                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                                <p><strong>User ID:</strong> {{ current_user.id }}</p>
+                            </div>
+                            <div class="text-end">
+                                <a href="#" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit me-1"></i> Edit Profile</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="card-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3 class="card-title">Activity Summary</h3>
+                            </div>
+                            <div class="mb-3">
+                                <div class="activity-item">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    <div>
+                                        <h6 class="text-muted mb-0">Last Login</h6>
+                                        <p class="mb-0 fw-bold">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <div>
+                                        <h6 class="text-muted mb-0">Total Logins</h6>
+                                        <p class="mb-0 fw-bold">1</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <a href="#" class="btn btn-outline-primary btn-sm"><i class="fas fa-history me-1"></i> View Full History</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="card-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <h3 class="card-title">Quick Actions</h3>
+                            </div>
+                            <ul class="action-list">
+                                <li><a href="#"><i class="fas fa-user-edit"></i> Update Profile</a></li>
+                                <li><a href="#"><i class="fas fa-key"></i> Change Password</a></li>
+                                <li><a href="#"><i class="fas fa-bell"></i> Notification Settings</a></li>
+                                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="dashboard-card">
-            <h3>Activity Summary</h3>
-            <p>This is where you'd typically display user activity metrics.</p>
-            <ul>
-                <li>Last login: {{ now.strftime('%Y-%m-%d %H:%M:%S') }}</li>
-                <li>Total logins: 1</li>
-            </ul>
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="content-placeholder">
+                <i class="fas fa-user"></i>
+                <h3 style="color: var(--primary);">Profile Settings</h3>
+                <p class="text-muted">This is where you can update your profile information.</p>
+            </div>
         </div>
 
-        <div class="dashboard-card">
-            <h3>Actions</h3>
-            <p>Quick actions you can take from your dashboard:</p>
-            <ul>
-                <li><a href="#">Update Profile</a></li>
-                <li><a href="#">Change Password</a></li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-            </ul>
+        <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+            <div class="content-placeholder">
+                <i class="fas fa-cog"></i>
+                <h3 style="color: var(--primary);">Account Settings</h3>
+                <p class="text-muted">This is where you can manage your account settings.</p>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+            <div class="content-placeholder">
+                <i class="fas fa-lock"></i>
+                <h3 style="color: var(--primary);">Security Settings</h3>
+                <p class="text-muted">This is where you can manage your security settings.</p>
+            </div>
         </div>
     </div>
 </div>

@@ -8,7 +8,7 @@ from datetime import datetime
 # Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24).hex()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
@@ -109,9 +109,8 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# Create database tables
-with app.app_context():
-    db.create_all()
-
 if __name__ == '__main__':
+    # Create database tables before running the app
+    with app.app_context():
+        db.create_all()
     app.run(debug=True) 

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Login-Register System{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Welcome to Our Authentication System</h1>
+    <p>A secure and easy-to-use login and registration system.</p>
+    {% if not current_user.is_authenticated %}
+        <div>
+            <a href="{{ url_for('login') }}" class="btn">Login</a>
+            <a href="{{ url_for('register') }}" class="btn">Register</a>
+        </div>
+    {% else %}
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="btn">Go to Dashboard</a>
+        </div>
+    {% endif %}
+</section>
+
+<div class="container" style="margin-top: 2rem;">
+    <div class="dashboard-card">
+        <h3>Secure Authentication</h3>
+        <p>Our system uses industry-standard security practices to keep your information safe.</p>
+    </div>
+    <div class="dashboard-card">
+        <h3>User-Friendly Dashboard</h3>
+        <p>Easily manage your account and access your personalized dashboard after logging in.</p>
+    </div>
+    <div class="dashboard-card">
+        <h3>Responsive Design</h3>
+        <p>Access your account from any device with our fully responsive design.</p>
+    </div>
+</div>
+{% endblock %} 

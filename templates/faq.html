@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - Login-Register System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center" data-aos="fade-down">
+            <h1 class="display-4 fw-bold mb-4">Frequently Asked Questions</h1>
+            <p class="lead text-muted mb-4">Find answers to the most common questions about our authentication system.</p>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="accordion accordion-flush shadow-sm rounded-3 overflow-hidden" id="faqAccordion" data-aos="fade-up" data-aos-delay="100">
+                
+                <!-- Account Management -->
+                <div class="card border-0">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-user-circle me-2"></i>Account Management
+                        </h3>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading1">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                                How do I create an account?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>To create an account, click on the "Register" button in the navigation bar. Fill out the registration form with your email address, username, and a secure password. After submitting the form, you'll receive a verification email. Click on the verification link to activate your account.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                How can I reset my password?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>If you've forgotten your password, click on the "Login" button and then select "Forgot Password?" Enter your registered email address, and we'll send you a password reset link. Click on the link in the email to set a new password.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                How do I update my profile information?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>After logging in, navigate to your profile by clicking on your username in the navigation bar. From your profile page, click on the "Edit Profile" button. Here, you can update your personal information, change your profile picture, and save your changes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security -->
+                <div class="card border-0 mt-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Security
+                        </h3>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                Is my personal information secure?
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Yes, we take security very seriously. All personal data is encrypted and stored securely. We use industry-standard security protocols to protect your information. Your password is hashed and never stored in plain text. We also implement regular security audits to ensure your data remains protected.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading5">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                How can I make my account more secure?
+                            </button>
+                        </h2>
+                        <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="heading5" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>To enhance your account security, we recommend:
+                                <ul>
+                                    <li>Using a strong, unique password</li>
+                                    <li>Enabling two-factor authentication in your account settings</li>
+                                    <li>Regularly updating your password</li>
+                                    <li>Not sharing your login credentials with others</li>
+                                    <li>Logging out when using shared computers</li>
+                                </ul>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Technical Issues -->
+                <div class="card border-0 mt-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-wrench me-2"></i>Technical Issues
+                        </h3>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading6">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                I didn't receive a verification email. What should I do?
+                            </button>
+                        </h2>
+                        <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="heading6" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>If you haven't received a verification email, please check your spam or junk folder first. If you still can't find it, you can request a new verification email by logging in to your account and following the prompt to resend the verification. If problems persist, please contact our support team.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading7">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                                The website is loading slowly. What can I do?
+                            </button>
+                        </h2>
+                        <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>If you're experiencing slow loading times, try:
+                                <ul>
+                                    <li>Clearing your browser cache and cookies</li>
+                                    <li>Using a different web browser</li>
+                                    <li>Checking your internet connection</li>
+                                    <li>Disabling any ad-blocking extensions temporarily</li>
+                                </ul>
+                                If the issue persists, it might be due to high traffic or temporary server issues. Please try again later or contact our support team.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacy -->
+                <div class="card border-0 mt-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-user-secret me-2"></i>Privacy
+                        </h3>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading8">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                                What information do you collect about me?
+                            </button>
+                        </h2>
+                        <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="heading8" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>We collect only the information necessary to provide our services, including your name, email address, username, and any other information you choose to provide in your profile. We also collect standard log data, such as IP addresses and browser information. For complete details, please refer to our Privacy Policy.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="heading9">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                                How can I delete my account and data?
+                            </button>
+                        </h2>
+                        <div id="collapse9" class="accordion-collapse collapse" aria-labelledby="heading9" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>To delete your account, go to your account settings and select the "Delete Account" option. Follow the prompts to confirm the deletion. Once deleted, all your personal data will be removed from our active databases. Some information may remain in our backups for a limited time, but will not be accessible or used. If you need assistance, please contact our support team.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5 pt-4" data-aos="fade-up" data-aos-delay="500">
+                <h3 class="h4 mb-4">Still have questions?</h3>
+                <p class="mb-4">If you couldn't find the answer to your question, please feel free to contact our support team.</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-lg px-5 py-3">
+                    <i class="fas fa-envelope me-2"></i>Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Smooth scroll to anchors
+    document.addEventListener('DOMContentLoaded', function() {
+        const anchorLinks = document.querySelectorAll('a[href^="#"]');
+        
+        anchorLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Open accordion if clicking from category card
+                    if (targetId === '#general' || targetId === '#security' || targetId === '#account') {
+                        const accordionId = targetId.substring(1) + 'Accordion';
+                        const firstButton = document.querySelector(`#${accordionId} .accordion-button`);
+                        if (firstButton && firstButton.classList.contains('collapsed')) {
+                            firstButton.click();
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

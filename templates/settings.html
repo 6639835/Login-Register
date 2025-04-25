@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Login-Register System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-cog me-2"></i>Settings</h5>
+                    <nav class="nav flex-column nav-pills mt-4">
+                        <a class="nav-link active" href="#account" data-bs-toggle="pill">
+                            <i class="fas fa-user-cog me-2"></i>Account
+                        </a>
+                        <a class="nav-link" href="#security" data-bs-toggle="pill">
+                            <i class="fas fa-shield-alt me-2"></i>Security
+                        </a>
+                        <a class="nav-link" href="#notifications" data-bs-toggle="pill">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                        <a class="nav-link" href="#privacy" data-bs-toggle="pill">
+                            <i class="fas fa-user-shield me-2"></i>Privacy
+                        </a>
+                        <a class="nav-link" href="#advanced" data-bs-toggle="pill">
+                            <i class="fas fa-tools me-2"></i>Advanced
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Account Settings -->
+                <div class="tab-pane fade show active" id="account">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Account Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" value="{{ current_user.username }}" disabled>
+                                    <small class="text-muted">Username cannot be changed</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" value="{{ current_user.email }}">
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="publicProfile" checked>
+                                    <label class="form-check-label" for="publicProfile">Make my profile public</label>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="language" class="form-label">Language</label>
+                                    <select class="form-select" id="language">
+                                        <option value="en">English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="zh">Chinese</option>
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Settings -->
+                <div class="tab-pane fade" id="security">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Security Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Change Password</h6>
+                            <form>
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </form>
+                            
+                            <hr class="my-4">
+                            
+                            <h6 class="card-subtitle mb-3">Two-Factor Authentication</h6>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                                <label class="form-check-label" for="twoFactorAuth">Enable Two-Factor Authentication</label>
+                            </div>
+                            <p class="text-muted">Enhance your account security by enabling two-factor authentication.</p>
+                            <button class="btn btn-outline-primary" disabled>Set Up Two-Factor</button>
+                            
+                            <hr class="my-4">
+                            
+                            <h6 class="card-subtitle mb-3 text-danger">Danger Zone</h6>
+                            <button class="btn btn-outline-danger">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Settings -->
+                <div class="tab-pane fade" id="notifications">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Notification Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <h6 class="mb-3">Email Notifications</h6>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="emailSecurity" checked>
+                                    <label class="form-check-label" for="emailSecurity">Security alerts</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="emailUpdates" checked>
+                                    <label class="form-check-label" for="emailUpdates">Account updates</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="emailPromotions">
+                                    <label class="form-check-label" for="emailPromotions">Promotional emails</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="emailNewsletter">
+                                    <label class="form-check-label" for="emailNewsletter">Newsletter</label>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <h6 class="mb-3">Web Notifications</h6>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="webMessages" checked>
+                                    <label class="form-check-label" for="webMessages">Messages</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="webUpdates" checked>
+                                    <label class="form-check-label" for="webUpdates">Account updates</label>
+                                </div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacy Settings -->
+                <div class="tab-pane fade" id="privacy">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Privacy Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="privacyProfile" checked>
+                                    <label class="form-check-label" for="privacyProfile">Make my profile visible to others</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="privacyEmail">
+                                    <label class="form-check-label" for="privacyEmail">Show my email address</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="privacyActivity" checked>
+                                    <label class="form-check-label" for="privacyActivity">Show my activity status</label>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <h6 class="mb-3">Data Usage</h6>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="dataCookies" checked>
+                                    <label class="form-check-label" for="dataCookies">Allow cookies</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="dataAnalytics" checked>
+                                    <label class="form-check-label" for="dataAnalytics">Allow analytics</label>
+                                </div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary">Save Privacy Settings</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Advanced Settings -->
+                <div class="tab-pane fade" id="advanced">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Advanced Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">Export Data</h6>
+                            <p class="text-muted">Download a copy of your data.</p>
+                            <button class="btn btn-outline-primary mb-4">Export All Data</button>
+                            
+                            <hr class="my-4">
+                            
+                            <h6 class="mb-3">API Access</h6>
+                            <p class="text-muted">Manage your API keys and access.</p>
+                            <div class="mb-3">
+                                <label for="apiKey" class="form-label">API Key</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="apiKey" value="api_xxxxxxxxxxxxxxxxxxxxxxxx" readonly>
+                                    <button class="btn btn-outline-secondary" type="button">Copy</button>
+                                    <button class="btn btn-outline-secondary" type="button">Regenerate</button>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h6 class="mb-3 text-danger">Account Management</h6>
+                            <button class="btn btn-outline-warning me-2">Deactivate Account</button>
+                            <button class="btn btn-outline-danger">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Activate tabs based on URL hash
+    document.addEventListener('DOMContentLoaded', function() {
+        const hash = window.location.hash;
+        if (hash) {
+            const tab = document.querySelector(`a[href="${hash}"]`);
+            if (tab) {
+                new bootstrap.Tab(tab).show();
+            }
+        }
+    });
+</script>
+{% endblock %} 

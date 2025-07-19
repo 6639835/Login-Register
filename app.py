@@ -13,12 +13,20 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 import secrets
+import time
+import hmac
+import hashlib
 
 # Create Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24).hex()
+# Use environment variable for secret key, or generate a consistent one
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# CSRF Protection
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
 
 # Email configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -46,6 +54,11 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('That username is taken. Please choose a different one.')
+    
+    def validate_email(self, email):
+        user = User.find_by_email(email.data)
+        if user:
+            raise ValidationError('That email is already registered. Please use a different one.')
 
 class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -117,27 +130,73 @@ class User(UserMixin, db.Model):
     @hybrid_property
     def email(self):
         """Decrypt email when accessing the property"""
+        if self._email is None:
+            return None
         return decrypt_data(self._email)
     
     @email.setter
     def email(self, value):
         """Encrypt email when setting the property"""
-        self._email = encrypt_data(value)
+        if value is None:
+            self._email = None
+        else:
+            self._email = encrypt_data(value)
         
     # Helper method to find a user by email
     @classmethod
     def find_by_email(cls, email):
         """Find a user by their email by checking against encrypted values"""
-        encrypted_email = encrypt_data(email)
-        # Query directly against the encrypted value
-        return cls.query.filter(cls._email == encrypted_email).first()
+        if not email:
+            return None
+        try:
+            encrypted_email = encrypt_data(email)
+            # Query directly against the encrypted value
+            return cls.query.filter(cls._email == encrypted_email).first()
+        except Exception as e:
+            print(f"Error in find_by_email: {e}")
+            return None
     
     def get_reset_token(self, expires_sec=1800):
-        """Generate a time-limited reset token"""
-        s = secrets.token_urlsafe(32)
-        # Store token in the database or cache
-        # For simplicity, we could use a separate table or Redis
-        return s
+        """Generate a time-limited reset token using HMAC"""
+        # Create a timestamp
+        timestamp = str(int(time.time() + expires_sec))
+        # Create payload with user ID and timestamp
+        payload = f"{self.id}:{timestamp}"
+        # Generate HMAC signature
+        secret_key = app.config['SECRET_KEY'].encode()
+        signature = hmac.new(secret_key, payload.encode(), hashlib.sha256).hexdigest()
+        # Combine payload and signature
+        token = f"{payload}:{signature}"
+        return token
+    
+    @staticmethod
+    def verify_reset_token(token):
+        """Verify a reset token and return the user if valid"""
+        try:
+            # Split token into parts
+            parts = token.split(':')
+            if len(parts) != 3:
+                return None
+            
+            user_id, timestamp, signature = parts
+            payload = f"{user_id}:{timestamp}"
+            
+            # Verify signature
+            secret_key = app.config['SECRET_KEY'].encode()
+            expected_signature = hmac.new(secret_key, payload.encode(), hashlib.sha256).hexdigest()
+            
+            if not hmac.compare_digest(signature, expected_signature):
+                return None
+            
+            # Check if token has expired
+            if int(timestamp) < int(time.time()):
+                return None
+            
+            # Find and return user
+            return User.query.get(int(user_id))
+            
+        except (ValueError, TypeError):
+            return None
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -204,17 +263,7 @@ def register():
     
     form = RegistrationForm()
     if form.validate_on_submit():
-        existing_user = User.query.filter_by(username=form.username.data).first()
-        if existing_user:
-            flash('Username already exists!', 'danger')
-            return render_template('register.html', form=form)
-        
-        # Optimized email uniqueness check
-        existing_email_user = User.find_by_email(form.email.data)
-        if existing_email_user:
-            flash('Email already registered!', 'danger')
-            return render_template('register.html', form=form)
-        
+        # The form validation now handles both username and email uniqueness
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         
@@ -245,13 +294,18 @@ def reset_token(token):
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
-    # Verify token
-    # In a real app, validate the token against the database or cache
+    # Verify token and get user
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('That is an invalid or expired token.', 'warning')
+        return redirect(url_for('reset_request'))
     
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        # Find user by token and update password
-        # For demo purposes, we'll just redirect
+        # Update user's password
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+        user.password = hashed_password
+        db.session.commit()
         flash('Your password has been updated! You can now log in.', 'success')
         return redirect(url_for('login'))
     

@@ -26,7 +26,6 @@ def generate_key():
         print(f"Generated new encryption key and stored in {KEY_FILE}")
         print(f"For production use, set this key as an environment variable named {ENV_KEY_NAME}")
 
-@functools.lru_cache(maxsize=1)
 def get_key():
     """Retrieve the encryption key from environment variable or file with caching"""
     global _KEY_CACHE
@@ -39,11 +38,11 @@ def get_key():
     env_key = os.environ.get(ENV_KEY_NAME)
     if env_key:
         try:
-            # Ensure the key is properly formatted
-            _KEY_CACHE = base64.b64decode(env_key.encode())
+            # Environment key should be base64 encoded
+            _KEY_CACHE = base64.urlsafe_b64decode(env_key.encode())
             return _KEY_CACHE
-        except Exception:
-            print("WARNING: Invalid encryption key in environment variable")
+        except Exception as e:
+            print(f"WARNING: Invalid encryption key in environment variable: {e}")
     
     # Fall back to file-based key
     if not os.path.exists(KEY_FILE):
@@ -94,7 +93,8 @@ def decrypt_data(encrypted_data):
         return decrypted_data.decode('utf-8')
     except Exception as e:
         print(f"Error decrypting data: {e}")
-        return encrypted_data  # Return original if decryption fails
+        # Return None instead of original data to prevent data exposure
+        return None
 
 # Create a key when module is imported
 generate_key() 

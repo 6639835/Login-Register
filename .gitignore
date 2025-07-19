@@ -47,6 +47,7 @@ __pycache__/
 
 # Virtual Environment
 venv/
+new_venv/
 env/
 ENV/
 
@@ -74,3 +75,6 @@ instance/
 # Encryption keys
 encryption_key.key
 *.key
+
+# Temporary files
+requirements_minimal.txt

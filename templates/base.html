@@ -26,10 +26,8 @@
           integrity="sha512-1cK78a1o+ht2JcaW6g8OXYwqpev9+6GqOkz9xmBN9iUUhIndKtxwILGWYOSibOKjLsEdjyjZvYDq/cZwNeak0w==" 
           crossorigin="anonymous" 
           referrerpolicy="no-referrer" />
-    <!-- Custom CSS - Minified -->
-    {% assets "css_all" %}
-        <link rel="stylesheet" href="{{ ASSET_URL }}">
-    {% endassets %}
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -285,20 +283,26 @@
     <!-- Custom JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize AOS Animation
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 100
-            });
+            // Initialize AOS Animation - only if AOS is loaded
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    once: true,
+                    offset: 100
+                });
+            }
             
-            // Preloader
+            // Preloader - hide immediately to avoid blocking due to CDN resource failures
             const preloader = document.getElementById('preloader');
             if (preloader) {
+                // Hide preloader immediately
+                preloader.classList.add('loaded');
+                document.body.classList.add('loaded');
+                
+                // Fallback timeout just in case
                 setTimeout(() => {
-                    preloader.classList.add('loaded');
-                    document.body.classList.add('loaded');
-                }, 500);
+                    preloader.style.display = 'none';
+                }, 100);
             }
             
             // Navbar Scrolled

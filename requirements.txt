@@ -10,4 +10,5 @@ Werkzeug==2.2.3
 cssmin==0.2.0
 jsmin==3.0.1
 SQLAlchemy==2.0.15
-WTForms==3.0.1 
+WTForms==3.0.1
+cryptography>=3.0.0 
